@@ -1,10 +1,10 @@
 ../Core/Src/preset.c:27:13:seed_alignment	3
 ../Core/Src/preset.c:34:14:breathe_phase	2
 ../Core/Src/preset.c:41:6:preset_init	2
-../Core/Src/preset.c:55:6:preset_on_pot_move	7
-../Core/Src/preset.c:69:6:preset_recall_toggle	7
-../Core/Src/preset.c:90:6:preset_hold_fired	3
-../Core/Src/preset.c:110:6:preset_tick	2
-../Core/Src/preset.c:116:7:preset_value	3
-../Core/Src/preset.c:121:6:preset_led_on	1
-../Core/Src/preset.c:126:13:preset_led_color	3
+../Core/Src/preset.c:55:6:preset_on_pot_move	9
+../Core/Src/preset.c:72:6:preset_recall_toggle	7
+../Core/Src/preset.c:93:6:preset_hold_fired	3
+../Core/Src/preset.c:113:6:preset_tick	2
+../Core/Src/preset.c:119:7:preset_value	3
+../Core/Src/preset.c:124:6:preset_led_on	1
+../Core/Src/preset.c:129:13:preset_led_color	3

@@ -14,7 +14,7 @@
 /* "On the spot" tolerance — ~3% of travel, a hair above the ADC's ~0.003
  * post-hysteresis step so the catch is easy to land by hand. */
 #define CATCH_TOL        0.03f
-#define CATCH_FLASH_MS   200.0f    /* white re-align flash on the EDGE onto a value */
+#define CATCH_FLASH_MS   400.0f    /* white re-align flash; cancels early if you leave the band */
 
 /* Cyan/white brightness shared with LED1 (the effect-on / gain LED). */
 #define PRESET_LEVEL     0.60f     /* solid recall + breathe PEAK  */
@@ -58,10 +58,13 @@ void preset_on_pot_move(Preset* p, int idx, float value)
     p->live[idx] = value;
 
     if (p->mode == PRESET_PRESET) {
-        /* Flash white on the EDGE where the knob crosses onto its saved value
-         * (not continuously). Informational only — the host applies the move. */
+        /* White cue, latched-with-cancel: start the flash on the EDGE where the
+         * knob crosses ONTO its saved value, let it run up to CATCH_FLASH_MS, but
+         * KILL it the instant the knob leaves the band. Informational only — the
+         * host applies the move. */
         const bool on_spot = fabsf(value - p->preset[idx]) <= CATCH_TOL;
-        if (on_spot && !p->aligned[idx]) p->catch_flash_ms = CATCH_FLASH_MS;
+        if (on_spot && !p->aligned[idx])      p->catch_flash_ms = CATCH_FLASH_MS;
+        else if (!on_spot && p->aligned[idx]) p->catch_flash_ms = 0.0f;
         p->aligned[idx] = on_spot;
     }
 }

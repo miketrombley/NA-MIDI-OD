@@ -23,7 +23,8 @@ stores the real POT4/VOLUME setting, not the forced-mute 0 — expected/correct.
 - **`PRESET_LIVE`** — pots pass straight through; LED2 off. (Boot state.)
 - **`PRESET_PRESET`** — recalled the snapshot. Untouched knobs hold the saved
   value; moving a knob hands that one pot back to live (see the gate below). LED2
-  solid **red**. Crossing a knob back onto its saved value flashes **white** (200 ms).
+  solid **red**. Crossing a knob back onto its saved value flashes **white** (up to
+  400 ms, cancelled early if you leave the band).
 - **`PRESET_SAVE_ARMED`** — a save is pending; LED2 breathes **white** (1.5 s
   triangle). Controls stay live so you can dial in the sound before committing.
 
@@ -57,22 +58,24 @@ knobs. It lives in `main.c` (the host owns the apply path), not in `preset.c`:
 This is **not** a locking soft-takeover — a moved knob takes over immediately (no
 jump-wait). The "find your preset" affordance is purely the white cue:
 
-## Knob-match cue (in `preset.c`) — white edge flash
+## Knob-match cue (in `preset.c`) — white latch-with-cancel flash
 `preset_on_pot_move(i, eff[i])` runs for all six pots every poll. In PRESET mode,
-when a knob crosses **within `CATCH_TOL` (0.03)** of its saved value, LED2 flashes
-white for `CATCH_FLASH_MS` (200 ms). Edge-triggered via `aligned[]` (fires on the
-crossing, not continuously); `seed_alignment()` on recall stops a knob already on
-its spot from spuriously flashing on its first move.
+when a knob crosses **within `CATCH_TOL` (0.03)** of its saved value, LED2 starts a
+white flash that runs up to `CATCH_FLASH_MS` (400 ms) — **but it cancels the instant
+the knob leaves the band** (edge-down kills the timer). Edge-triggered via `aligned[]`
+(fires on the crossing, not continuously); `seed_alignment()` on recall stops a knob
+already on its spot from spuriously flashing on its first move. The flash timer is
+shared across pots, so it tracks the most recent knob to enter/leave its band.
 
 ## LED2 colors (`preset_led_color`, `PRESET_LEVEL` = 0.60)
 - LIVE: off.
 - PRESET: red `{0.60, 0, 0}`.
-- match-flash: white `{0.60, 0.60, 0.60}` (200 ms edge flash).
+- match-flash: white `{0.60, 0.60, 0.60}` (up to 400 ms, cancels on leaving band).
 - SAVE_ARMED: white breathe, peak 0.60 → trough 0.10, 1.5 s triangle.
 
 ## Tuning knobs
 - `CATCH_TOL` (preset.c) — match-cue tolerance (~3% travel).
-- `CATCH_FLASH_MS` (preset.c) — white flash length (200 ms).
+- `CATCH_FLASH_MS` (preset.c) — max white flash length (400 ms; cancels early on exit).
 - `PRESET_MOVE_EPS` (main.c) — knob travel that reclaims a recalled pot.
 - `PRESET_HOLD_MS` (main.c) — tap-vs-save threshold.
 - breathe period / `PRESET_LEVEL` / `BREATHE_MIN` (preset.c) — LED brightness/timing.
