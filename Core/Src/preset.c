@@ -14,7 +14,7 @@
 /* "On the spot" tolerance — ~3% of travel, a hair above the ADC's ~0.003
  * post-hysteresis step so the catch is easy to land by hand. */
 #define CATCH_TOL        0.03f
-#define CATCH_FLASH_MS   500.0f    /* white re-align flash; cancels early if you leave the band */
+#define CATCH_FLASH_MS   750.0f    /* white re-align flash; cancels early if you leave the band */
 
 /* Cyan/white brightness shared with LED1 (the effect-on / gain LED). */
 #define PRESET_LEVEL     0.60f     /* solid recall + breathe PEAK  */
