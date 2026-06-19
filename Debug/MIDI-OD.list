@@ -7,23 +7,23 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, ALLOC, LOAD, READONLY, DATA
   1 .text         00007718  080001e4  080001e4  000011e4  2**2
                   CONTENTS, ALLOC, LOAD, READONLY, CODE
-  2 .rodata       000000dc  080078fc  080078fc  000088fc  2**2
+  2 .rodata       000000d0  080078fc  080078fc  000088fc  2**2
                   CONTENTS, ALLOC, LOAD, READONLY, DATA
-  3 .ARM.extab    00000000  080079d8  080079d8  0000906c  2**0
+  3 .ARM.extab    00000000  080079cc  080079cc  0000906c  2**0
                   CONTENTS, READONLY
-  4 .ARM          00000008  080079d8  080079d8  000089d8  2**2
+  4 .ARM          00000008  080079cc  080079cc  000089cc  2**2
                   CONTENTS, ALLOC, LOAD, READONLY, DATA
-  5 .preinit_array 00000000  080079e0  080079e0  0000906c  2**0
+  5 .preinit_array 00000000  080079d4  080079d4  0000906c  2**0
                   CONTENTS, ALLOC, LOAD, DATA
-  6 .init_array   00000004  080079e0  080079e0  000089e0  2**2
+  6 .init_array   00000004  080079d4  080079d4  000089d4  2**2
                   CONTENTS, ALLOC, LOAD, READONLY, DATA
-  7 .fini_array   00000004  080079e4  080079e4  000089e4  2**2
+  7 .fini_array   00000004  080079d8  080079d8  000089d8  2**2
                   CONTENTS, ALLOC, LOAD, READONLY, DATA
-  8 .data         0000006c  20000000  080079e8  00009000  2**2
+  8 .data         0000006c  20000000  080079dc  00009000  2**2
                   CONTENTS, ALLOC, LOAD, DATA
-  9 .bss          00000bfc  2000006c  08007a54  0000906c  2**2
+  9 .bss          00000bfc  2000006c  08007a48  0000906c  2**2
                   ALLOC
- 10 ._user_heap_stack 00000600  20000c68  08007a54  00009c68  2**0
+ 10 ._user_heap_stack 00000600  20000c68  08007a48  00009c68  2**0
                   ALLOC
  11 .ARM.attributes 00000029  00000000  00000000  0000906c  2**0
                   CONTENTS, READONLY
@@ -37,15 +37,15 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, READONLY, DEBUGGING, OCTETS
  16 .debug_macro  00020f99  00000000  00000000  00024fe8  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 17 .debug_line   000156e9  00000000  00000000  00045f81  2**0
+ 17 .debug_line   000154c3  00000000  00000000  00045f81  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 18 .debug_str    000bcdfe  00000000  00000000  0005b66a  2**0
+ 18 .debug_str    000bcdfe  00000000  00000000  0005b444  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 19 .comment      00000043  00000000  00000000  00118468  2**0
+ 19 .comment      00000043  00000000  00000000  00118242  2**0
                   CONTENTS, READONLY
- 20 .debug_frame  00005d34  00000000  00000000  001184ac  2**2
+ 20 .debug_frame  00005d34  00000000  00000000  00118288  2**2
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 21 .debug_line_str 00000067  00000000  00000000  0011e1e0  2**0
+ 21 .debug_line_str 00000067  00000000  00000000  0011dfbc  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
 
 Disassembly of section .text:
@@ -2605,7 +2605,7 @@ void ctrl_smooth_tick(void)
  800167c:	20000990 	.word	0x20000990
  8001680:	200009fc 	.word	0x200009fc
  8001684:	3dcccccd 	.word	0x3dcccccd
- 8001688:	08007914 	.word	0x08007914
+ 8001688:	08007908 	.word	0x08007908
  800168c:	2000093c 	.word	0x2000093c
  8001690:	2000000c 	.word	0x2000000c
 
@@ -3111,7 +3111,7 @@ int main(void)
  80019e0:	2000091c 	.word	0x2000091c
  80019e4:	20000088 	.word	0x20000088
  80019e8:	200007f4 	.word	0x200007f4
- 80019ec:	08007928 	.word	0x08007928
+ 80019ec:	0800791c 	.word	0x0800791c
  80019f0:	40010800 	.word	0x40010800
  80019f4:	2000086c 	.word	0x2000086c
  80019f8:	2000087c 	.word	0x2000087c
@@ -5868,7 +5868,7 @@ void preset_on_pot_move(Preset* p, int idx, float value)
  8002b28:	f893 3036 	ldrb.w	r3, [r3, #54]	@ 0x36
  8002b2c:	2b01      	cmp	r3, #1
  8002b2e:	d12f      	bne.n	8002b90 <preset_on_pot_move+0x8c>
-        /* Flash purple on the EDGE where the knob crosses onto its saved value
+        /* Flash white on the EDGE where the knob crosses onto its saved value
          * (not continuously). Informational only — the host applies the move. */
         const bool on_spot = fabsf(value - p->preset[idx]) <= CATCH_TOL;
  8002b30:	68fb      	ldr	r3, [r7, #12]
@@ -5924,7 +5924,7 @@ void preset_on_pot_move(Preset* p, int idx, float value)
  8002b94:	bd90      	pop	{r4, r7, pc}
  8002b96:	bf00      	nop
  8002b98:	3cf5c28f 	.word	0x3cf5c28f
- 8002b9c:	43af0000 	.word	0x43af0000
+ 8002b9c:	43480000 	.word	0x43480000
 
 08002ba0 <preset_recall_toggle>:
 
@@ -6198,7 +6198,7 @@ PresetColor preset_led_color(const Preset* p)
  8002d4e:	f7fd fb77 	bl	8000440 <__aeabi_fmul>
  8002d52:	4603      	mov	r3, r0
  8002d54:	4619      	mov	r1, r3
- 8002d56:	481f      	ldr	r0, [pc, #124]	@ (8002dd4 <preset_led_color+0xa8>)
+ 8002d56:	4820      	ldr	r0, [pc, #128]	@ (8002dd8 <preset_led_color+0xac>)
  8002d58:	f7fd fa68 	bl	800022c <__aeabi_fsub>
  8002d5c:	4603      	mov	r3, r0
  8002d5e:	62fb      	str	r3, [r7, #44]	@ 0x2c
@@ -6215,13 +6215,13 @@ PresetColor preset_led_color(const Preset* p)
  8002d70:	f107 0314 	add.w	r3, r7, #20
  8002d74:	e893 0007 	ldmia.w	r3, {r0, r1, r2}
  8002d78:	e884 0007 	stmia.w	r4, {r0, r1, r2}
-        PresetColor c = { 0.55f, 0.0f, 0.85f };               /* re-aligned = purple */
+        PresetColor c = { PRESET_LEVEL, PRESET_LEVEL, PRESET_LEVEL };  /* re-aligned = white */
         return c;
     }
-    PresetColor c = { 0.0f, PRESET_LEVEL, PRESET_LEVEL };     /* recall = cyan (== LED1) */
+    PresetColor c = { PRESET_LEVEL, 0.0f, 0.0f };            /* recall = red */
     return c;
 }
- 8002d7c:	e026      	b.n	8002dcc <preset_led_color+0xa0>
+ 8002d7c:	e028      	b.n	8002dd0 <preset_led_color+0xa4>
     if (p->catch_flash_ms > 0.0f) {
  8002d7e:	683b      	ldr	r3, [r7, #0]
  8002d80:	6bdb      	ldr	r3, [r3, #60]	@ 0x3c
@@ -6231,8 +6231,8 @@ PresetColor preset_led_color(const Preset* p)
  8002d8c:	4603      	mov	r3, r0
  8002d8e:	2b00      	cmp	r3, #0
  8002d90:	d00e      	beq.n	8002db0 <preset_led_color+0x84>
-        PresetColor c = { 0.55f, 0.0f, 0.85f };               /* re-aligned = purple */
- 8002d92:	4a11      	ldr	r2, [pc, #68]	@ (8002dd8 <preset_led_color+0xac>)
+        PresetColor c = { PRESET_LEVEL, PRESET_LEVEL, PRESET_LEVEL };  /* re-aligned = white */
+ 8002d92:	4a12      	ldr	r2, [pc, #72]	@ (8002ddc <preset_led_color+0xb0>)
  8002d94:	f107 0308 	add.w	r3, r7, #8
  8002d98:	ca07      	ldmia	r2, {r0, r1, r2}
  8002d9a:	e883 0007 	stmia.w	r3, {r0, r1, r2}
@@ -6243,26 +6243,27 @@ PresetColor preset_led_color(const Preset* p)
  8002da6:	e893 0007 	ldmia.w	r3, {r0, r1, r2}
  8002daa:	e884 0007 	stmia.w	r4, {r0, r1, r2}
 }
- 8002dae:	e00d      	b.n	8002dcc <preset_led_color+0xa0>
-    PresetColor c = { 0.0f, PRESET_LEVEL, PRESET_LEVEL };     /* recall = cyan (== LED1) */
- 8002db0:	4a0a      	ldr	r2, [pc, #40]	@ (8002ddc <preset_led_color+0xb0>)
- 8002db2:	f107 0320 	add.w	r3, r7, #32
- 8002db6:	ca07      	ldmia	r2, {r0, r1, r2}
- 8002db8:	e883 0007 	stmia.w	r3, {r0, r1, r2}
+ 8002dae:	e00f      	b.n	8002dd0 <preset_led_color+0xa4>
+    PresetColor c = { PRESET_LEVEL, 0.0f, 0.0f };            /* recall = red */
+ 8002db0:	4b09      	ldr	r3, [pc, #36]	@ (8002dd8 <preset_led_color+0xac>)
+ 8002db2:	623b      	str	r3, [r7, #32]
+ 8002db4:	f04f 0300 	mov.w	r3, #0
+ 8002db8:	627b      	str	r3, [r7, #36]	@ 0x24
+ 8002dba:	f04f 0300 	mov.w	r3, #0
+ 8002dbe:	62bb      	str	r3, [r7, #40]	@ 0x28
     return c;
- 8002dbc:	687b      	ldr	r3, [r7, #4]
- 8002dbe:	461c      	mov	r4, r3
- 8002dc0:	f107 0320 	add.w	r3, r7, #32
- 8002dc4:	e893 0007 	ldmia.w	r3, {r0, r1, r2}
- 8002dc8:	e884 0007 	stmia.w	r4, {r0, r1, r2}
+ 8002dc0:	687b      	ldr	r3, [r7, #4]
+ 8002dc2:	461c      	mov	r4, r3
+ 8002dc4:	f107 0320 	add.w	r3, r7, #32
+ 8002dc8:	e893 0007 	ldmia.w	r3, {r0, r1, r2}
+ 8002dcc:	e884 0007 	stmia.w	r4, {r0, r1, r2}
 }
- 8002dcc:	6878      	ldr	r0, [r7, #4]
- 8002dce:	3734      	adds	r7, #52	@ 0x34
- 8002dd0:	46bd      	mov	sp, r7
- 8002dd2:	bd90      	pop	{r4, r7, pc}
- 8002dd4:	3f19999a 	.word	0x3f19999a
- 8002dd8:	080078fc 	.word	0x080078fc
- 8002ddc:	08007908 	.word	0x08007908
+ 8002dd0:	6878      	ldr	r0, [r7, #4]
+ 8002dd2:	3734      	adds	r7, #52	@ 0x34
+ 8002dd4:	46bd      	mov	sp, r7
+ 8002dd6:	bd90      	pop	{r4, r7, pc}
+ 8002dd8:	3f19999a 	.word	0x3f19999a
+ 8002ddc:	080078fc 	.word	0x080078fc
 
 08002de0 <HAL_MspInit>:
 void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
@@ -7339,7 +7340,7 @@ LoopFillZerobss:
   ldr r1, =_edata
  8003398:	2000006c 	.word	0x2000006c
   ldr r2, =_sidata
- 800339c:	080079e8 	.word	0x080079e8
+ 800339c:	080079dc 	.word	0x080079dc
   ldr r2, =_sbss
  80033a0:	2000006c 	.word	0x2000006c
   ldr r4, =_ebss
@@ -12174,7 +12175,7 @@ if (((RCC_ClkInitStruct->ClockType) & RCC_CLOCKTYPE_PCLK1) == RCC_CLOCKTYPE_PCLK
  8004e42:	bf00      	nop
  8004e44:	40022000 	.word	0x40022000
  8004e48:	40021000 	.word	0x40021000
- 8004e4c:	08007940 	.word	0x08007940
+ 8004e4c:	08007934 	.word	0x08007934
  8004e50:	20000010 	.word	0x20000010
  8004e54:	20000014 	.word	0x20000014
 
@@ -12445,8 +12446,8 @@ uint32_t HAL_RCC_GetSysClockFreq(void)
  8005028:	e8bd 8fb0 	ldmia.w	sp!, {r4, r5, r7, r8, r9, sl, fp, pc}
  800502c:	40021000 	.word	0x40021000
  8005030:	00f42400 	.word	0x00f42400
- 8005034:	08007958 	.word	0x08007958
- 8005038:	08007968 	.word	0x08007968
+ 8005034:	0800794c 	.word	0x0800794c
+ 8005038:	0800795c 	.word	0x0800795c
  800503c:	003d0900 	.word	0x003d0900
  8005040:	007a1200 	.word	0x007a1200
 
@@ -12493,7 +12494,7 @@ uint32_t HAL_RCC_GetPCLK1Freq(void)
  8005074:	4618      	mov	r0, r3
  8005076:	bd80      	pop	{r7, pc}
  8005078:	40021000 	.word	0x40021000
- 800507c:	08007950 	.word	0x08007950
+ 800507c:	08007944 	.word	0x08007944
 
 08005080 <HAL_RCC_GetPCLK2Freq>:
   * @note   Each time PCLK2 changes, this function must be called to update the
@@ -12519,7 +12520,7 @@ uint32_t HAL_RCC_GetPCLK2Freq(void)
  800509c:	4618      	mov	r0, r3
  800509e:	bd80      	pop	{r7, pc}
  80050a0:	40021000 	.word	0x40021000
- 80050a4:	08007950 	.word	0x08007950
+ 80050a4:	08007944 	.word	0x08007944
 
 080050a8 <RCC_Delay>:
   * @brief  This function provides delay (in milliseconds) based on CPU cycles method.
@@ -13442,8 +13443,8 @@ uint32_t HAL_RCCEx_GetPeriphCLKFreq(uint32_t PeriphClk)
  80055cc:	46bd      	mov	sp, r7
  80055ce:	bd80      	pop	{r7, pc}
  80055d0:	40021000 	.word	0x40021000
- 80055d4:	08007978 	.word	0x08007978
- 80055d8:	08007988 	.word	0x08007988
+ 80055d4:	0800796c 	.word	0x0800796c
+ 80055d8:	0800797c 	.word	0x0800797c
  80055dc:	00f42400 	.word	0x00f42400
  80055e0:	003d0900 	.word	0x003d0900
  80055e4:	aaaaaaab 	.word	0xaaaaaaab
@@ -17389,10 +17390,10 @@ static HAL_StatusTypeDef USB_CoreReset(USB_OTG_GlobalTypeDef *USBx)
  8006bde:	4798      	blx	r3
  8006be0:	3601      	adds	r6, #1
  8006be2:	e7f2      	b.n	8006bca <__libc_init_array+0x1e>
- 8006be4:	080079e0 	.word	0x080079e0
- 8006be8:	080079e0 	.word	0x080079e0
- 8006bec:	080079e0 	.word	0x080079e0
- 8006bf0:	080079e4 	.word	0x080079e4
+ 8006be4:	080079d4 	.word	0x080079d4
+ 8006be8:	080079d4 	.word	0x080079d4
+ 8006bec:	080079d4 	.word	0x080079d4
+ 8006bf0:	080079d8 	.word	0x080079d8
 
 08006bf4 <expf>:
  8006bf4:	b538      	push	{r3, r4, r5, lr}
@@ -17678,15 +17679,15 @@ static HAL_StatusTypeDef USB_CoreReset(USB_OTG_GlobalTypeDef *USBx)
  8006ed4:	42cff1b5 	.word	0x42cff1b5
  8006ed8:	3eb17218 	.word	0x3eb17218
  8006edc:	3f851591 	.word	0x3f851591
- 8006ee0:	080079a0 	.word	0x080079a0
- 8006ee4:	08007998 	.word	0x08007998
+ 8006ee0:	08007994 	.word	0x08007994
+ 8006ee4:	0800798c 	.word	0x0800798c
  8006ee8:	3331bb4c 	.word	0x3331bb4c
  8006eec:	35ddea0e 	.word	0x35ddea0e
  8006ef0:	388ab355 	.word	0x388ab355
  8006ef4:	3b360b61 	.word	0x3b360b61
  8006ef8:	3e2aaaab 	.word	0x3e2aaaab
  8006efc:	3fb8aa3b 	.word	0x3fb8aa3b
- 8006f00:	080079a8 	.word	0x080079a8
+ 8006f00:	0800799c 	.word	0x0800799c
  8006f04:	3f317180 	.word	0x3f317180
  8006f08:	3717f7d1 	.word	0x3717f7d1
  8006f0c:	7149f2ca 	.word	0x7149f2ca
@@ -17787,7 +17788,7 @@ static HAL_StatusTypeDef USB_CoreReset(USB_OTG_GlobalTypeDef *USBx)
  8007006:	4330      	orrs	r0, r6
  8007008:	e795      	b.n	8006f36 <__ieee754_fmodf+0x26>
  800700a:	bf00      	nop
- 800700c:	080079b0 	.word	0x080079b0
+ 800700c:	080079a4 	.word	0x080079a4
 
 08007010 <__ieee754_powf>:
  8007010:	e92d 4ff0 	stmdb	sp!, {r4, r5, r6, r7, r8, r9, sl, fp, lr}
@@ -18231,7 +18232,7 @@ static HAL_StatusTypeDef USB_CoreReset(USB_OTG_GlobalTypeDef *USBx)
  80074c6:	e7ed      	b.n	80074a4 <__ieee754_powf+0x494>
  80074c8:	001cc471 	.word	0x001cc471
  80074cc:	005db3d6 	.word	0x005db3d6
- 80074d0:	080079c8 	.word	0x080079c8
+ 80074d0:	080079bc 	.word	0x080079bc
  80074d4:	3e53f142 	.word	0x3e53f142
  80074d8:	3e6c3255 	.word	0x3e6c3255
  80074dc:	3e8ba305 	.word	0x3e8ba305
@@ -18242,8 +18243,8 @@ static HAL_StatusTypeDef USB_CoreReset(USB_OTG_GlobalTypeDef *USBx)
  80074f0:	3f763800 	.word	0x3f763800
  80074f4:	3f76384f 	.word	0x3f76384f
  80074f8:	369dc3a0 	.word	0x369dc3a0
- 80074fc:	080079b8 	.word	0x080079b8
- 8007500:	080079c0 	.word	0x080079c0
+ 80074fc:	080079ac 	.word	0x080079ac
+ 8007500:	080079b4 	.word	0x080079b4
  8007504:	3338aa3c 	.word	0x3338aa3c
  8007508:	43160000 	.word	0x43160000
  800750c:	f1b3 5f7c 	cmp.w	r3, #1056964608	@ 0x3f000000
@@ -18618,8 +18619,8 @@ static HAL_StatusTypeDef USB_CoreReset(USB_OTG_GlobalTypeDef *USBx)
  80078d4:	f024 0401 	bic.w	r4, r4, #1
  80078d8:	e7ed      	b.n	80078b6 <__ieee754_sqrtf+0xb2>
  80078da:	bf00      	nop
- 80078dc:	080079d4 	.word	0x080079d4
- 80078e0:	080079d0 	.word	0x080079d0
+ 80078dc:	080079c8 	.word	0x080079c8
+ 80078e0:	080079c4 	.word	0x080079c4
 
 080078e4 <_init>:
  80078e4:	b5f8      	push	{r3, r4, r5, r6, r7, lr}

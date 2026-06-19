@@ -62,7 +62,7 @@ SCK=PC10, MOSI=PC12), Mode 0,0, 1-line TX-only, /16. Write = `{0x00, code}`.
 ## Control mapping (current)
 - SW_1 → bypass (PA15). LED1 = engage indicator (on = effect in circuit).
 - SW_2 → preset: tap = recall / un-recall, ~1 s hold = arm save, second hold =
-  commit. LED2 = preset status (off / cyan / purple match-flash / breathing white).
+  commit. LED2 = preset status (off / red / white match-flash / breathing white).
   Single RAM-only snapshot — see `Preset_Profile.md`.
 - POT1–POT5 → the 5 SSI2160 VCAs (HPF/LPF/LPF/VOLUME/GAIN) — see `VCA_Profiles.md`.
 - POT6 → bias DPOT: center (code 63, no gating) → positive rail (code 127), C taper

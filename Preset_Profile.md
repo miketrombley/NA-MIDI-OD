@@ -23,7 +23,7 @@ stores the real POT4/VOLUME setting, not the forced-mute 0 — expected/correct.
 - **`PRESET_LIVE`** — pots pass straight through; LED2 off. (Boot state.)
 - **`PRESET_PRESET`** — recalled the snapshot. Untouched knobs hold the saved
   value; moving a knob hands that one pot back to live (see the gate below). LED2
-  solid **red**. Crossing a knob back onto its saved value flashes **white**.
+  solid **red**. Crossing a knob back onto its saved value flashes **white** (200 ms).
 - **`PRESET_SAVE_ARMED`** — a save is pending; LED2 breathes **white** (1.5 s
   triangle). Controls stay live so you can dial in the sound before committing.
 
@@ -57,22 +57,22 @@ knobs. It lives in `main.c` (the host owns the apply path), not in `preset.c`:
 This is **not** a locking soft-takeover — a moved knob takes over immediately (no
 jump-wait). The "find your preset" affordance is purely the white cue:
 
-## Knob-match cue (in `preset.c`) — purple edge flash (the "In The Water" look)
+## Knob-match cue (in `preset.c`) — white edge flash
 `preset_on_pot_move(i, eff[i])` runs for all six pots every poll. In PRESET mode,
 when a knob crosses **within `CATCH_TOL` (0.03)** of its saved value, LED2 flashes
-purple for `CATCH_FLASH_MS` (350 ms). Edge-triggered via `aligned[]` (fires on the
+white for `CATCH_FLASH_MS` (200 ms). Edge-triggered via `aligned[]` (fires on the
 crossing, not continuously); `seed_alignment()` on recall stops a knob already on
 its spot from spuriously flashing on its first move.
 
 ## LED2 colors (`preset_led_color`, `PRESET_LEVEL` = 0.60)
 - LIVE: off.
-- PRESET: cyan `{0, 0.60, 0.60}`.
-- match-flash: purple `{0.55, 0, 0.85}` (350 ms edge flash).
+- PRESET: red `{0.60, 0, 0}`.
+- match-flash: white `{0.60, 0.60, 0.60}` (200 ms edge flash).
 - SAVE_ARMED: white breathe, peak 0.60 → trough 0.10, 1.5 s triangle.
 
 ## Tuning knobs
 - `CATCH_TOL` (preset.c) — match-cue tolerance (~3% travel).
-- `CATCH_FLASH_MS` (preset.c) — purple flash length (350 ms).
+- `CATCH_FLASH_MS` (preset.c) — white flash length (200 ms).
 - `PRESET_MOVE_EPS` (main.c) — knob travel that reclaims a recalled pot.
 - `PRESET_HOLD_MS` (main.c) — tap-vs-save threshold.
 - breathe period / `PRESET_LEVEL` / `BREATHE_MIN` (preset.c) — LED brightness/timing.

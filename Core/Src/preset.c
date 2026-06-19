@@ -14,7 +14,7 @@
 /* "On the spot" tolerance — ~3% of travel, a hair above the ADC's ~0.003
  * post-hysteresis step so the catch is easy to land by hand. */
 #define CATCH_TOL        0.03f
-#define CATCH_FLASH_MS   350.0f    /* purple re-align flash on the EDGE onto a value */
+#define CATCH_FLASH_MS   200.0f    /* white re-align flash on the EDGE onto a value */
 
 /* Cyan/white brightness shared with LED1 (the effect-on / gain LED). */
 #define PRESET_LEVEL     0.60f     /* solid recall + breathe PEAK  */
@@ -58,7 +58,7 @@ void preset_on_pot_move(Preset* p, int idx, float value)
     p->live[idx] = value;
 
     if (p->mode == PRESET_PRESET) {
-        /* Flash purple on the EDGE where the knob crosses onto its saved value
+        /* Flash white on the EDGE where the knob crosses onto its saved value
          * (not continuously). Informational only — the host applies the move. */
         const bool on_spot = fabsf(value - p->preset[idx]) <= CATCH_TOL;
         if (on_spot && !p->aligned[idx]) p->catch_flash_ms = CATCH_FLASH_MS;
@@ -133,9 +133,9 @@ PresetColor preset_led_color(const Preset* p)
         return c;
     }
     if (p->catch_flash_ms > 0.0f) {
-        PresetColor c = { 0.55f, 0.0f, 0.85f };               /* re-aligned = purple */
+        PresetColor c = { PRESET_LEVEL, PRESET_LEVEL, PRESET_LEVEL };  /* re-aligned = white */
         return c;
     }
-    PresetColor c = { 0.0f, PRESET_LEVEL, PRESET_LEVEL };     /* recall = cyan (== LED1) */
+    PresetColor c = { PRESET_LEVEL, 0.0f, 0.0f };            /* recall = red */
     return c;
 }

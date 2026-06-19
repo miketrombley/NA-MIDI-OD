@@ -16,8 +16,8 @@
  *   PRESET_LIVE       — pots pass straight through; LED2 off.
  *   PRESET_PRESET     — recalled the snapshot; knob moves still edit live (the
  *                       host holds the recalled value only until a knob moves).
- *                       A knob landing back on its saved value flashes purple
- *                       ("matched the preset"). LED2 solid cyan.
+ *                       A knob landing back on its saved value flashes white
+ *                       ("matched the preset"). LED2 solid red.
  *   PRESET_SAVE_ARMED — a save is pending; LED2 breathes white. Controls stay
  *                       live, so you can dial in the sound before committing.
  *
@@ -67,7 +67,7 @@ typedef struct {
 void preset_init(Preset* p);
 
 /* A pot's resolved value (0..1) this poll. In PRESET mode, the edge where a knob
- * crosses onto its saved value arms the purple match flash. Always non-blocking. */
+ * crosses onto its saved value arms the white match flash. Always non-blocking. */
 void preset_on_pot_move(Preset* p, int idx, float value);
 
 /* FS2 gesture hooks (host classifies tap vs hold). */
