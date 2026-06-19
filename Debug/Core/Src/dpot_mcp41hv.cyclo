@@ -1,0 +1,4 @@
+../Core/Src/dpot_mcp41hv.c:4:6:mcp41hv_init	1
+../Core/Src/dpot_mcp41hv.c:16:6:mcp41hv_write	2
+../Core/Src/dpot_mcp41hv.c:33:6:mcp41hv_set_code	3
+../Core/Src/dpot_mcp41hv.c:45:6:mcp41hv_set	3

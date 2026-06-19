@@ -1,0 +1,2 @@
+../Core/Src/footswitch.c:3:6:fsw_init	24	static
+../Core/Src/footswitch.c:15:6:fsw_poll	24	static

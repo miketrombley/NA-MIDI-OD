@@ -1,0 +1,11 @@
+../Core/Src/midi.c:38:16:status_data_len	3
+../Core/Src/midi.c:49:6:midi_init	1
+../Core/Src/midi.c:62:6:midi_rx_push	2
+../Core/Src/midi.c:71:6:midi_set_cc_handler	1
+../Core/Src/midi.c:72:6:midi_set_note_handler	1
+../Core/Src/midi.c:73:6:midi_set_pitchbend_handler	1
+../Core/Src/midi.c:75:9:midi_get_channel	1
+../Core/Src/midi.c:76:9:midi_set_channel	2
+../Core/Src/midi.c:84:13:dispatch	20
+../Core/Src/midi.c:126:13:parse_byte	11
+../Core/Src/midi.c:168:6:midi_poll	2

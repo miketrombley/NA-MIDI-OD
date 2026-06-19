@@ -1,0 +1,9 @@
+../Core/Inc/sp1513.h:50:21:sp1513_gamma22	16	static
+../Core/Src/led.c:7:21:clamp_01	16	static
+../Core/Src/led.c:14:14:apply_exponential	32	static
+../Core/Src/led.c:21:14:apply_curve	16	static
+../Core/Src/led.c:34:13:write_duty	24	static
+../Core/Src/led.c:45:6:led_init	24	static
+../Core/Src/led.c:58:6:led_setBrightness	24	static
+../Core/Src/led.c:75:6:led_setEnabled	16	static
+../Core/Src/led.c:81:7:led_getBrightness	16	static

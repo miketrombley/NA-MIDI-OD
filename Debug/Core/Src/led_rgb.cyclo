@@ -1,0 +1,5 @@
+../Core/Inc/sp1513.h:41:28:sp1513_normalize	1
+../Core/Src/led_rgb.c:4:6:ledrgb_init_split	1
+../Core/Src/led_rgb.c:15:6:ledrgb_init	1
+../Core/Src/led_rgb.c:23:6:ledrgb_set	1
+../Core/Src/led_rgb.c:34:6:ledrgb_setBrightness	3

@@ -1,0 +1,5 @@
+../Core/Inc/sp1513.h:41:28:sp1513_normalize	32	static
+../Core/Src/led_rgb.c:4:6:ledrgb_init_split	32	static
+../Core/Src/led_rgb.c:15:6:ledrgb_init	48	static
+../Core/Src/led_rgb.c:23:6:ledrgb_set	48	static
+../Core/Src/led_rgb.c:34:6:ledrgb_setBrightness	16	static

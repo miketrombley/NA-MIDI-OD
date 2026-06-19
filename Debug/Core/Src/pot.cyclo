@@ -1,0 +1,3 @@
+../Core/Src/pot.c:4:6:pot_init	1
+../Core/Src/pot.c:16:7:pot_read	5
+../Core/Src/pot.c:42:6:pot_poll	3
