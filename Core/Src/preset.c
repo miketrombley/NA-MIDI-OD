@@ -16,11 +16,16 @@
 #define CATCH_TOL        0.03f
 #define CATCH_FLASH_MS   750.0f    /* white re-align flash; cancels early if you leave the band */
 
-/* Cyan/white brightness shared with LED1 (the effect-on / gain LED). */
-#define PRESET_LEVEL     0.60f     /* solid recall + breathe PEAK  */
-#define BREATHE_MIN      0.10f     /* breathe TROUGH (darker low)  */
+/* InTheWater house palette + breathe. Both boards share the SAME sp1513 die
+ * balance (kPreGamma R0.80/G0.60/B0.79) + gamma 2.2, so these perceptual values
+ * render identically here. LED2's max_brightness is 1.0 (set in main.c), like ITW. */
+#define WHITE_R           0.70f
+#define WHITE_G           0.90f
+#define WHITE_B           0.90f     /* ITW kWhite — R-trimmed neutral white       */
+#define RED_LEVEL         1.00f     /* solid recall red; run bright like ITW      */
+#define BREATHE_FLOOR     0.40f     /* breathe TROUGH = 40% of kWhite (ITW)       */
 
-#define BREATHE_PERIOD_MS 1500.0f  /* 1.5 s triangle, matches the "waiting" cue */
+#define BREATHE_PERIOD_MS 1500.0f   /* 1.5 s triangle, matches ITW's "waiting" cue */
 
 /* Re-seed knob alignment from where the knobs physically sit right now, so a
  * knob already on its spot doesn't spuriously flash on its first move. */
@@ -30,7 +35,7 @@ static void seed_alignment(Preset* p)
         p->aligned[i] = fabsf(p->live[i] - p->preset[i]) <= CATCH_TOL;
 }
 
-/* Triangle phase for the breathe: 0 at the bright peak, 1 at the dark trough. */
+/* Triangle phase for the breathe: 0 at the dark trough, 1 at the bright peak. */
 static float breathe_phase(const Preset* p)
 {
     const float t = fmodf(p->breathe_ms, BREATHE_PERIOD_MS);
@@ -106,7 +111,7 @@ void preset_hold_fired(Preset* p)
          * a cancel can return there. Controls stay live while armed. */
         p->prev_mode  = p->mode;
         p->mode       = PRESET_SAVE_ARMED;
-        p->breathe_ms = 0.0f;               /* start the breath at the bright peak */
+        p->breathe_ms = 0.0f;               /* start the breath at the dark trough */
     }
 }
 
@@ -129,16 +134,17 @@ bool preset_led_on(const Preset* p)
 PresetColor preset_led_color(const Preset* p)
 {
     if (p->mode == PRESET_SAVE_ARMED) {
-        /* White breathe (peak == PRESET_LEVEL, trough == BREATHE_MIN) so "save
-         * mode" is unmistakable and clearly a mode, not a recalled preset. */
-        const float v = PRESET_LEVEL - breathe_phase(p) * (PRESET_LEVEL - BREATHE_MIN);
-        PresetColor c = { v, v, v };
+        /* White breathe, exactly like ITW's scale(kWhite, breathe(ph)): the white
+         * is scaled from BREATHE_FLOOR up to full and back (triangle). breathe_phase
+         * is 0 at the trough, 1 at the peak. */
+        const float k = BREATHE_FLOOR + (1.0f - BREATHE_FLOOR) * breathe_phase(p);
+        PresetColor c = { WHITE_R * k, WHITE_G * k, WHITE_B * k };
         return c;
     }
     if (p->catch_flash_ms > 0.0f) {
-        PresetColor c = { PRESET_LEVEL, PRESET_LEVEL, PRESET_LEVEL };  /* re-aligned = white */
+        PresetColor c = { WHITE_R, WHITE_G, WHITE_B };    /* re-aligned = full white */
         return c;
     }
-    PresetColor c = { PRESET_LEVEL, 0.0f, 0.0f };            /* recall = red */
+    PresetColor c = { RED_LEVEL, 0.0f, 0.0f };            /* recall = red */
     return c;
 }

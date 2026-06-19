@@ -67,18 +67,22 @@ the knob leaves the band** (edge-down kills the timer). Edge-triggered via `alig
 already on its spot from spuriously flashing on its first move. The flash timer is
 shared across pots, so it tracks the most recent knob to enter/leave its band.
 
-## LED2 colors (`preset_led_color`, `PRESET_LEVEL` = 0.60)
+## LED2 colors (`preset_led_color`) — matched to InTheWater's palette/brightness
+Both boards share the same sp1513 die balance + gamma, and LED2's `max_brightness`
+is 1.0 (set in `main.c`), so these render identically to InTheWater.
 - LIVE: off.
-- PRESET: red `{0.60, 0, 0}`.
-- match-flash: white `{0.60, 0.60, 0.60}` (up to 750 ms, cancels on leaving band).
-- SAVE_ARMED: white breathe, peak 0.60 → trough 0.10, 1.5 s triangle.
+- PRESET: red `{1.0, 0, 0}` (`RED_LEVEL`, full).
+- match-flash: white `{0.70, 0.90, 0.90}` = ITW `kWhite` (up to 750 ms, cancels on leaving band).
+- SAVE_ARMED: white breathe = `scale(kWhite, BREATHE_FLOOR + (1−FLOOR)·phase)`,
+  trough 40% of kWhite → full peak, 1.5 s triangle (ITW's exact breathe).
 
 ## Tuning knobs
 - `CATCH_TOL` (preset.c) — match-cue tolerance (~3% travel).
 - `CATCH_FLASH_MS` (preset.c) — max white flash length (750 ms; cancels early on exit).
 - `PRESET_MOVE_EPS` (main.c) — knob travel that reclaims a recalled pot.
 - `PRESET_HOLD_MS` (main.c) — tap-vs-save threshold.
-- breathe period / `PRESET_LEVEL` / `BREATHE_MIN` (preset.c) — LED brightness/timing.
+- `WHITE_R/G/B`, `RED_LEVEL`, `BREATHE_FLOOR`, breathe period (preset.c) — LED2
+  color / brightness / breathe (all matched to InTheWater).
 
 ## Build
 `Core/Src/preset.c` is in `Debug/Core/Src/subdir.mk` + `Debug/objects.list` (same
