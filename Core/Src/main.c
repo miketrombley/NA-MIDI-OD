@@ -532,17 +532,15 @@ int main(void)
       /* Advance preset timing (breathe phase + match-cue countdown). */
       preset_tick(&preset_state, dt_ms);
 
-      /* LED1 = GAIN meter: brightness tracks the GAIN VCA's actual (exponential)
-       * gain, so the user sees drive level. Off when bypassed. Uses ctl[4] so a
-       * recalled-but-untouched gain reads its preset value, not the raw knob.
-       * gain_lin = 10^(dB/20), dB = -(1-ctl)*1.65V / 0.031 = -(1-ctl)*53.2 dB. */
-      float gain_lin = bypass_on ? 0.0f
-                     : powf(10.0f, -(1.0f - ctl[4]) * 2.661f);
-      ledrgb_setBrightness(&led1, gain_lin);
+      /* LED1 = engage indicator: solid red while the effect is in circuit
+       * (bypass OFF), off when bypassed. ledrgb_set drives the per-channel color
+       * AND re-renders the PWM (ledrgb_setBrightness only moves the cap, so on its
+       * own it never lit); LED1's max_brightness stays 1.0 from init. */
+      if (bypass_on) ledrgb_off(&led1);
+      else           ledrgb_set(&led1, 1.0f, 0.0f, 0.0f);   /* solid red */
 
-      /* LED2 = preset status: off (live), solid cyan (recalled), purple flash
-       * when a knob matches its saved value, breathing white
-       * (knob matched the saved value), breathing white (save armed). */
+      /* LED2 = preset status: off (live), solid red (recalled), white flash when a
+       * knob crosses onto its saved value, breathing white (save armed). */
       if (preset_led_on(&preset_state)) {
         PresetColor c = preset_led_color(&preset_state);
         ledrgb_set(&led2, c.r, c.g, c.b);

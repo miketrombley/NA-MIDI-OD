@@ -60,7 +60,10 @@ SCK=PC10, MOSI=PC12), Mode 0,0, 1-line TX-only, /16. Write = `{0x00, code}`.
   BIDIMODE the BSY flag never clears and it hangs the MCU on boot.
 
 ## Control mapping (current)
-- SW_1 → bypass (PA15). LED1 = engage indicator (on = effect in circuit).
+- SW_1 → bypass (PA15). LED1 = engage indicator: **solid red when the effect is
+  in circuit** (bypass OFF), off when bypassed. (Was a never-rendering "gain
+  meter": `ledrgb_setBrightness` only moves the brightness cap and the channel
+  colors were never set, so LED1 stayed dark — now driven via `ledrgb_set`.)
 - SW_2 → preset: tap = recall / un-recall, ~1 s hold = arm save, second hold =
   commit. LED2 = preset status (off / red / white match-flash / breathing white).
   Single RAM-only snapshot — see `Preset_Profile.md`.
@@ -71,7 +74,7 @@ SCK=PC10, MOSI=PC12), Mode 0,0, 1-line TX-only, /16. Write = `{0x00, code}`.
   last-mover-wins hysteresis; CC29/FS1 → bypass, FS2 → preset recall toggle (no
   momentary-CC analogue for hold-to-save). See `MIDI.md`.
 - The rainbow animation (`led_demo`) was a power-on pulse check; **removed** now
-  that LED1 (gain meter) and LED2 (preset) have real jobs. `led_demo.[ch]` still
+  that LED1 (engage) and LED2 (preset) have real jobs. `led_demo.[ch]` still
   compiles but is unused.
 - **TODO**: preset persistence to flash (F105 has no EEPROM — needs external SPI
   flash); multi-slot presets if desired.
