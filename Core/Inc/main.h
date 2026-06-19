@@ -55,7 +55,9 @@ void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
 void Error_Handler(void);
 
 /* USER CODE BEGIN EFP */
-
+/* Control-smoothing tick (anti-zipper). Defined in main.c; called from the
+ * hand-written TIM7_IRQHandler in stm32f1xx_it.c. */
+void ctrl_smooth_tick(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/

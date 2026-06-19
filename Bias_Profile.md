@@ -117,7 +117,60 @@ curve aggressiveness, adjust `BIAS_TAPER_K` (use `→0` for ~linear).
 
 ---
 
-## 5. Status / TODO
+## 5. Output smoothing (anti-zipper) — RC + respin
+
+The bias DPOT is the worst zipper source: 7-bit (≈74 mV/code) **and**, unlike the
+VCAs, there's **no filter after the wiper** — the OPA1677 (U17) is a plain unity
+buffer, so every code change is an instant DC step straight into the bias point.
+Firmware now glides the code (TIM7 ISR, ±1 code/tick @ 2 kHz — see CLAUDE.md
+"Control smoothing"), which makes steps small + evenly spaced, but a true fix
+needs an **output RC**. Both items below are for the next spin.
+
+### Add an RC on the wiper
+Place it **before the buffer** (high-Z + input → no DC error, and R adds no output
+impedance to `+V_BIAS`):
+
+```
+P0W (pin 12) ──[ R ]──┬── OPA1677 +in (pin 3)
+                      │
+                     [C]
+                      │
+                     AGND
+```
+
+- **Values:** R = 47 kΩ, C = 100 nF → τ ≈ 4.7 ms (fc ≈ 34 Hz). Smears the code
+  steps but still tracks a hand-twist instantly. 1–5 ms is the useful range.
+- **Why 47 k, not 10 k:** (a) keeps C a tiny 100 nF — 10 k would need ~470 nF for
+  the same τ; (b) the wiper resistance varies 0–2.5 kΩ with code and is *in series*
+  with R, so at 47 k it's only ~5 % of τ (stable across the sweep) vs ~25 % at 10 k;
+  (c) OPA1677 is CMOS (pA bias current) so even 100 k adds no offset — only stay
+  ≤~100 k to limit thermal noise / EMI pickup. If you must use 10 k, bump C to
+  ~330–470 nF.
+- **Ground reference:** cap to **analog ground** is correct — it filters the node
+  relative to ground regardless of polarity. Since we only swing 0→+5 V the node
+  just sits at a positive DC the whole time.
+- ⚠️ This refines §1's "wiper resistance doesn't affect the output": true for the
+  **DC voltage**, but the wiper R *is* in series with the RC, so it affects the
+  **time constant** — which is exactly why the external R should dominate it.
+
+### Drop the split rail
+We only use the **positive half** (codes 63–127 = center→+5 V); the −5 V_A rail and
+the high-voltage MCP41HV31 are unnecessary for bias. Replace with a **single-supply
+SPI pot** powered 0–5 V: A = +5 V, B = GND, wiper → buffer → 0–5 V `+V_BIAS`.
+
+- **Grab more resolution while you're at it.** 7-bit (128 steps) is a big part of
+  the zipper. An **8-bit (256)** or **10-bit (1024)** part shrinks every step → much
+  quieter before the RC even helps. Best single bias-zipper win available.
+- **Simpler map.** A true 0–5 V part gives code 0 = 0 V, mid = 2.5 V, full = 5 V —
+  linear and predictable. The whole asymmetric-rail mess in §2–§3 (center = +0.28 V
+  at code 63, 0 V at code ~59) goes away.
+- **Buffer.** If `+V_BIAS` never needs to go below 0 V, the OPA1677 can run
+  single-supply +5 V (it's RRIO) — confirm the downstream gating stage doesn't want
+  a hair below 0 first. Keep −5 V_A only if other circuitry needs it.
+
+---
+
+## 6. Status / TODO
 
 - [ ] **Confirm rails** with endpoint reads (`mcp41hv_write(&bias,0)` → V_B,
       `,127)` → V_A). Also proves the SPI link (0.5 alone can't — it's the POR
@@ -135,7 +188,7 @@ curve aggressiveness, adjust `BIAS_TAPER_K` (use `→0` for ~linear).
 
 ---
 
-## 6. Measurements log
+## 7. Measurements log
 
 | Date | Code | control | Measured +V_BIAS | Notes |
 |---|---|---|---|---|

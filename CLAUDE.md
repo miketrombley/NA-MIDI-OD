@@ -67,6 +67,36 @@ SCK=PC10, MOSI=PC12), Mode 0,0, 1-line TX-only, /16. Write = `{0x00, code}`.
 - The rainbow animation (`led_demo`) is a power-on pulse check, not product UI.
 - **TODO**: finalize SW_2 + LED behavior for product UI (still pulse checks).
 
+## Control smoothing / anti-zipper (TIM7 ISR)
+A fast knob twist (or a big MIDI jump) used to step the VCA CVs / bias code at the
+100 Hz loop rate — an audible "zzz" staircase, worst on **gain** and **bias**.
+Fixed by splitting "decide the value" from "drive the output":
+- The 100 Hz loop now only writes **targets** — `cv_target[5]` (HPF1/LPF1/LPF2/
+  VOLUME/GAIN) and `bias_target` (DPOT code). Globals in `main.c` USER CODE PV.
+- **`TIM7` update ISR @ `CTRL_SMOOTH_HZ` (2 kHz)** does the actual writes
+  (`ctrl_smooth_tick` in `main.c`, called from `TIM7_IRQHandler` in
+  `stm32f1xx_it.c`): one-pole slew per VCA (`CV_SMOOTH_COEF` 0.10 ≈ 4.8 ms τ) +
+  bias **code-glide** (±1 code/tick). This is our stand-in for InTheWater's
+  per-sample `fonepole` (it runs at 48 kHz in the audio callback; we have no
+  audio loop, so a timer carries it).
+- **TIM7 is hand-configured in code, NOT in CubeMX** (same pattern/rationale as
+  USART1 below): `ctrl_smooth_start()` enables the clock + NVIC and the handler
+  lives in a USER CODE block, so both survive regen with no generated-handler
+  collision. Don't tick TIM7 in the `.ioc`. **NVIC priority 7 = below USART1 (6)**
+  so MIDI RX always preempts the smoother (no dropped bytes). SPI bias writes run
+  *inside* this ISR but only fire while gliding (change-detect) — fine at ~7 µs.
+- **Future option** (let CubeMX reserve + own TIM7, so a regen can't reassign it):
+  enable TIM7 in the `.ioc` (timebase @ 2 kHz) + tick its global interrupt, regen,
+  move the `ctrl_smooth_tick()` call into `HAL_TIM_PeriodElapsedCallback`, and drop
+  the manual clock/NVIC in `ctrl_smooth_start()`. Full steps in the `TIM7_IRQHandler`
+  comment in `stm32f1xx_it.c` (mirrors the USART1 note).
+- **VCA zipper is fully gone** (the PWM has a real RC after it). **Bias is only
+  reduced, not eliminated** — the DPOT has NO RC after the OPA1677 buffer, so each
+  code is still an instant DC step; glide just makes them small + evenly spaced.
+  **Proper bias fix = add an output RC on `+V_BIAS`** (hardware; see `Bias_Profile.md`).
+- Tuning: smoother/slower = lower `CV_SMOOTH_COEF`; faster glide = raise
+  `CTRL_SMOOTH_HZ` (re-derive PSC/ARR in `ctrl_smooth_start`).
+
 ## MIDI input (UART/TRS — `midi.[ch]`, `midi_map.h`)
 C/HAL port of InTheWater's MidiHandler. USART1 RX (PA10) @ **31250** baud,
 RX-only, interrupt-driven → 256-byte ring buffer → `midi_poll()` parses +

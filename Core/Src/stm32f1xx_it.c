@@ -23,6 +23,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "midi.h"   /* midi_rx_push() — USART1 RX feeds the MIDI ring buffer */
+/* ctrl_smooth_tick() is declared in main.h (already included above). */
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -224,6 +225,38 @@ void USART1_IRQHandler(void)
     uint8_t b = (uint8_t)(USART1->DR & 0xFFu);   /* read DR -> clears RXNE/ORE */
     if (sr & USART_SR_RXNE)
       midi_rx_push(b);
+  }
+}
+
+/**
+  * @brief TIM7 update interrupt — control-smoothing tick (anti-zipper).
+  *
+  * Hand-written, like USART1 above: TIM7 is a basic timer brought up in code
+  * (ctrl_smooth_start() in main.c USER CODE 2), NOT in CubeMX, so this handler
+  * lives in a USER CODE block and there's no generated TIM7_IRQHandler to
+  * collide with on regen. Fires at CTRL_SMOOTH_HZ; we clear the update flag and
+  * run ctrl_smooth_tick() (main.c), which slews the VCA CVs + glides the bias
+  * code. NVIC priority 7 keeps it below USART1 (6) so MIDI RX is never starved.
+  *
+  * Trade-off (same as USART1): because TIM7 is NOT in the .ioc, CubeMX thinks
+  * it's free and could hand it to something else on a future regen. It's
+  * documented in CLAUDE.md so that's unlikely, but if you'd rather have CubeMX
+  * "reserve" + own the vector:
+  *   1. In CubeMX enable TIM7, set the time base for CTRL_SMOOTH_HZ (PSC 71 /
+  *      ARR 499 @ 72 MHz = 2 kHz), and tick "TIM7 global interrupt" in NVIC.
+  *   2. Regenerate. CubeMX emits MX_TIM7_Init (+ its MspInit clock enable), the
+  *      NVIC config, and a TIM7_IRQHandler that calls HAL_TIM_IRQHandler.
+  *   3. Move the ctrl_smooth_tick() call into HAL_TIM_PeriodElapsedCallback
+  *      (or the generated handler's USER CODE block) and DELETE the manual
+  *      __HAL_RCC_TIM7_CLK_ENABLE / NVIC / htim7 setup in ctrl_smooth_start()
+  *      — keep only HAL_TIM_Base_Start_IT(&htim7). Then delete this handler.
+  */
+void TIM7_IRQHandler(void)
+{
+  if (TIM7->SR & TIM_SR_UIF)
+  {
+    TIM7->SR = (uint16_t)~TIM_SR_UIF;   /* clear update flag (rc_w0) */
+    ctrl_smooth_tick();
   }
 }
 

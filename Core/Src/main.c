@@ -48,6 +48,24 @@
 /* C taper (anti-log): fast rise off center, fine resolution near the top.
  * curve(x) = (1 - e^-k x) / (1 - e^-k); larger k = more aggressive front end.  */
 #define BIAS_TAPER_K   4.5f
+
+/* --- Control smoothing (anti-zipper, TIM7 ISR) ----------------------------
+ * The 100 Hz loop only sets *targets*; a TIM7 update ISR at CTRL_SMOOTH_HZ does
+ * the actual output writes — (a) one-pole-slews each VCA's CV toward its target
+ * and (b) glides the bias DPOT one code per tick toward its target. A fast knob
+ * twist (or a MIDI jump) then ramps instead of stepping, so the staircase no
+ * longer lands in the audio band as "zzz". This is our equivalent of the
+ * per-sample fonepole InTheWater runs in its 48 kHz audio callback — except we
+ * have no audio loop, so a dedicated timer carries it.
+ *   CV_SMOOTH_COEF: one-pole alpha in  y += a*(target - y).  0.10 @ 2 kHz ~=
+ *   4.8 ms time constant — smooth yet still tracks a 100 Hz target with no
+ *   audible lag. Lower = smoother/slower, higher = snappier/buzzier.
+ * NOTE: the VCA path has a real RC after the PWM, so smoothing fully removes its
+ * zipper. The bias DPOT has NO RC after the OPA1677 buffer, so each code is an
+ * instant DC step — gliding makes the steps small + evenly spaced (much quieter)
+ * but a true fix still needs an output RC on +V_BIAS (see Bias_Profile.md). */
+#define CTRL_SMOOTH_HZ   2000u   /* TIM7 tick: PSC 71 -> 1 MHz, ARR 499 -> 2 kHz */
+#define CV_SMOOTH_COEF   0.10f
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -84,6 +102,16 @@ CvOut  lpf2;               /* VCA_LPF2   PB9 / TIM4_CH4 — POT3 (high-cut, inv.
 CvOut  gain;               /* VCA_GAIN   PB7 / TIM4_CH2 — POT5 (drive level in)  */
 CvOut  volume;             /* VCA_VOLUME PB8 / TIM4_CH3 — POT4 (master out)      */
 Mcp41hv bias;              /* MCP41HV31 bias pot on SPI3 (CS = PC11 / DPOT_CS)   */
+
+/* --- Control smoothing (anti-zipper) — see CTRL_SMOOTH_HZ. The 100 Hz loop
+ * writes the targets below; the TIM7 ISR (ctrl_smooth_tick) does the output
+ * writes. 32-bit aligned float/int loads & stores are atomic on Cortex-M3, so
+ * the loop<->ISR handoff needs no locking. Index: 0=HPF1 1=LPF1 2=LPF2 3=VOLUME
+ * 4=GAIN (matches the cvout_set order the loop used to call directly). */
+TIM_HandleTypeDef htim7;                       /* smoothing tick — NOT in CubeMX */
+static CvOut* const cv_chan[5] = { &hpf1, &lpf1, &lpf2, &volume, &gain };
+volatile float cv_target[5] = {0};             /* loop -> ISR: per-VCA CV goal   */
+volatile int   bias_target  = BIAS_CODE_MIN;   /* loop -> ISR: DPOT code goal    */
 
 /* --- MIDI (UART/TRS on USART1 @ 31250) ------------------------------------
  * CC 20..25 drive POT1..POT6's targets; each pot arbitrates MIDI vs the
@@ -195,6 +223,46 @@ static void on_midi_cc(uint8_t cc, uint8_t value)
     default:
       break;
   }
+}
+
+/* Smoothing tick — called from TIM7_IRQHandler (stm32f1xx_it.c) at
+ * CTRL_SMOOTH_HZ. (a) One-pole-slews each VCA's CV toward cv_target[] and writes
+ * it (the PWM's RC then smooths the small per-tick steps to a clean ramp).
+ * (b) Glides the bias DPOT one code per tick toward bias_target; mcp41hv_set_code
+ * change-detects, so SPI only fires while it's actually moving. Kept short: no
+ * expf/powf here (those stay in the 100 Hz loop). */
+void ctrl_smooth_tick(void)
+{
+  static float cv_smooth[5];           /* ISR-private slewed CV state */
+
+  for (int i = 0; i < 5; i++) {
+    cv_smooth[i] += CV_SMOOTH_COEF * (cv_target[i] - cv_smooth[i]);
+    cvout_set(cv_chan[i], cv_smooth[i]);
+  }
+
+  int cur = bias.last_code;            /* -1 only before the boot write; here >=0 */
+  if      (cur < bias_target) mcp41hv_set_code(&bias, (uint8_t)(cur + 1));
+  else if (cur > bias_target) mcp41hv_set_code(&bias, (uint8_t)(cur - 1));
+}
+
+/* Bring up TIM7 as the smoothing tick: a basic timer (no GPIO) not configured in
+ * CubeMX, so we enable its clock + NVIC by hand (same pattern as USART1's RX
+ * vector) and it survives regeneration. APB1 timer clock = 72 MHz; PSC 71 ->
+ * 1 MHz, ARR 499 -> 2 kHz update IRQ. Priority 7 = BELOW USART1 (6) so MIDI RX
+ * always preempts the smoother and can never drop a byte. */
+static void ctrl_smooth_start(void)
+{
+  __HAL_RCC_TIM7_CLK_ENABLE();
+  htim7.Instance               = TIM7;
+  htim7.Init.Prescaler         = (72000000u / 1000000u) - 1u;   /* -> 1 MHz */
+  htim7.Init.CounterMode       = TIM_COUNTERMODE_UP;
+  htim7.Init.Period            = (1000000u / CTRL_SMOOTH_HZ) - 1u;
+  htim7.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  HAL_TIM_Base_Init(&htim7);
+
+  HAL_NVIC_SetPriority(TIM7_IRQn, 7, 0);
+  HAL_NVIC_EnableIRQ(TIM7_IRQn);
+  HAL_TIM_Base_Start_IT(&htim7);
 }
 
 /* USER CODE END 0 */
@@ -333,6 +401,13 @@ int main(void)
   HAL_NVIC_SetPriority(USART1_IRQn, 6, 0);
   HAL_NVIC_EnableIRQ(USART1_IRQn);
   __HAL_UART_ENABLE_IT(&huart1, UART_IT_RXNE);
+
+  /* Start the TIM7 control-smoothing ISR. From here on the loop sets cv_target[]
+   * / bias_target and the ISR drives the actual VCA/bias outputs. Targets boot
+   * at 0 / code 63 (matches the cvout/bias boot state above) so nothing jumps;
+   * the first 100 Hz pass fills in the real knob positions and the ISR ramps to
+   * them over a few ms. */
+  ctrl_smooth_start();
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -374,26 +449,29 @@ int main(void)
       }
       if (fsw_rising(&sw2)) led2_on = !led2_on;
 
-      /* Each pot -> its VCA's CV (100 Hz; the RC smooths the steps). eff[] is
-       * the knob-or-MIDI value resolved above, so CC 20..25 drive these too. */
-      cvout_set(&hpf1,   eff[0]);   /* POT1 -> HPF1   */
-      cvout_set(&lpf1,   eff[1]);   /* POT2 -> LPF1   */
-      cvout_set(&lpf2,   eff[2]);   /* POT3 -> LPF2   */
+      /* Publish each pot's resolved value as a *target*; the TIM7 ISR slews the
+       * actual VCA CV / bias code toward it (anti-zipper — see CTRL_SMOOTH_HZ).
+       * eff[] is the knob-or-MIDI value resolved above, so CC 20..25 drive these
+       * too. Index order matches cv_chan[]: HPF1 LPF1 LPF2 VOLUME GAIN. */
+      cv_target[0] = eff[0];   /* POT1 -> HPF1   */
+      cv_target[1] = eff[1];   /* POT2 -> LPF1   */
+      cv_target[2] = eff[2];   /* POT3 -> LPF2   */
       /* VOLUME follows POT4 when engaged; forced to full attenuation when
        * bypassed so the wet path is silenced and only the dry JFET signal
-       * passes (one signal at a time). control 0 = max CV = ~-50 dB. */
-      cvout_set(&volume, bypass_on ? 0.0f : eff[3]);   /* POT4 -> VOLUME */
-      cvout_set(&gain,   eff[4]);   /* POT5 -> GAIN   */
+       * passes (one signal at a time). control 0 = max CV = ~-50 dB. The slew
+       * also gives a soft (a few-ms) bypass transition for free. */
+      cv_target[3] = bypass_on ? 0.0f : eff[3];   /* POT4 -> VOLUME */
+      cv_target[4] = eff[4];   /* POT5 -> GAIN   */
 
       /* POT6 -> bias: center (code 63, no gating) -> positive rail (code 127),
        * with a C taper so the bias moves fast off center then fine-tunes near
-       * the top. set_code change-detects, so SPI only fires when the tap
-       * actually moves -> no zipper noise. */
+       * the top. Set the target code here; the ISR glides toward it one code at
+       * a time (change-detected SPI), so a fast twist ramps instead of lurching. */
       float bias_curve = (1.0f - expf(-BIAS_TAPER_K * eff[5]))
                        / (1.0f - expf(-BIAS_TAPER_K));
-      mcp41hv_set_code(&bias, (uint8_t)lroundf(
+      bias_target = (int)lroundf(
           (float)BIAS_CODE_MIN
-          + bias_curve * ((float)BIAS_CODE_MAX - (float)BIAS_CODE_MIN)));
+          + bias_curve * ((float)BIAS_CODE_MAX - (float)BIAS_CODE_MIN));
 
       /* LED1 = GAIN meter: brightness tracks the GAIN VCA's actual (exponential)
        * gain, so the user sees drive level. Off when bypassed. gain_lin = 10^(dB/20),
