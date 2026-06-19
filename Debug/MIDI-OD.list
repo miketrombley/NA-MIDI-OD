@@ -5943,7 +5943,7 @@ void preset_on_pot_move(Preset* p, int idx, float value)
  8002bb8:	bd90      	pop	{r4, r7, pc}
  8002bba:	bf00      	nop
  8002bbc:	3cf5c28f 	.word	0x3cf5c28f
- 8002bc0:	43c80000 	.word	0x43c80000
+ 8002bc0:	43fa0000 	.word	0x43fa0000
 
 08002bc4 <preset_recall_toggle>:
 
