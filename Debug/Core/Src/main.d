@@ -30,10 +30,9 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pcd.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_usb.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pcd_ex.h \
- ../Core/Inc/led_rgb.h ../Core/Inc/led.h ../Core/Inc/led_demo.h \
- ../Core/Inc/led_rgb.h ../Core/Inc/pot.h ../Core/Inc/footswitch.h \
- ../Core/Inc/cvout.h ../Core/Inc/dpot_mcp41hv.h ../Core/Inc/midi.h \
- ../Core/Inc/midi_map.h
+ ../Core/Inc/led_rgb.h ../Core/Inc/led.h ../Core/Inc/pot.h \
+ ../Core/Inc/footswitch.h ../Core/Inc/cvout.h ../Core/Inc/dpot_mcp41hv.h \
+ ../Core/Inc/midi.h ../Core/Inc/midi_map.h ../Core/Inc/preset.h
 ../Core/Inc/main.h:
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h:
 ../Core/Inc/stm32f1xx_hal_conf.h:
@@ -68,11 +67,10 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pcd_ex.h:
 ../Core/Inc/led_rgb.h:
 ../Core/Inc/led.h:
-../Core/Inc/led_demo.h:
-../Core/Inc/led_rgb.h:
 ../Core/Inc/pot.h:
 ../Core/Inc/footswitch.h:
 ../Core/Inc/cvout.h:
 ../Core/Inc/dpot_mcp41hv.h:
 ../Core/Inc/midi.h:
 ../Core/Inc/midi_map.h:
+../Core/Inc/preset.h:

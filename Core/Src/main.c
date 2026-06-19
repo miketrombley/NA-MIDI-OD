@@ -22,13 +22,13 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "led_rgb.h"
-#include "led_demo.h"
 #include "pot.h"
 #include "footswitch.h"
 #include "cvout.h"
 #include "dpot_mcp41hv.h"   /* MCP41HV31 bias control (SPI3) */
 #include "midi.h"           /* UART/TRS MIDI input (USART1 @ 31250) */
 #include "midi_map.h"       /* CC number assignments */
+#include "preset.h"         /* SW_2 preset snapshot/recall (single, RAM-only) */
 #include <math.h>   /* powf — LED1 gain-curve meter; fabsf — MIDI hysteresis */
 /* USER CODE END Includes */
 
@@ -91,10 +91,24 @@ PCD_HandleTypeDef hpcd_USB_OTG_FS;
 LedRgb led1;   /* LEFT  — R:TIM3_CH4(PB1)  G:TIM2_CH3(PB10)  B:TIM2_CH4(PB11) */
 LedRgb led2;   /* RIGHT — R:TIM3_CH1(PA6)  G:TIM3_CH2(PA7)   B:TIM3_CH3(PB0)  */
 Pot    pots[6];  /* POT1..POT6 — read pots[i].value (0..1) after polling */
-Footswitch sw1, sw2;       /* SW_1 (PA5) = bypass footswitch, SW_2 (PA4) toggles LED2 */
-bool   led2_on = true;     /* SW_2 master-toggles LED2 (pulse check) */
+Footswitch sw1, sw2;       /* SW_1 (PA5) = bypass footswitch, SW_2 (PA4) = preset */
 bool   bypass_on = true;   /* JFET bypass network: true = bypass ON (PA15 LOW,
                               MCU out 0). Unit boots bypassed. */
+
+/* --- Presets (SW_2 + LED2) -------------------------------------------------
+ * One RAM-only snapshot of the six resolved pot values; SW_2 tap = recall,
+ * ~1 s hold = arm save, second hold = commit (see preset.[ch] / Preset_Profile.md).
+ * Recall holds each saved value until that pot physically moves: the loop reads
+ * preset_value(i) for a not-yet-moved pot in PRESET mode, then hands control back
+ * to the live knob once it travels past PRESET_MOVE_EPS. pot_live[] latches that
+ * hand-off; it's re-armed for all pots whenever we (re)enter PRESET mode. */
+Preset preset_state;
+#define PRESET_HOLD_MS    1000u    /* SW_2 hold to arm/commit a save             */
+#define PRESET_MOVE_EPS   0.02f    /* knob travel that reclaims a recalled pot   */
+bool       sw2_hold_fired = false; /* the current SW_2 hold already armed/committed */
+PresetMode preset_prev_mode = PRESET_LIVE; /* detect entry into PRESET (re-seed gate) */
+bool       pot_live[6]   = { true, true, true, true, true, true }; /* knob has taken over */
+float      pot_baseline[6] = {0};  /* eff[] frozen at recall, to measure movement */
 /* SSI2160 VCA control-voltage outputs (PWM -> RC -> VC pin). Same cvout driver. */
 CvOut  hpf1;               /* VC_HPF1    PB3 / TIM2_CH2 — POT1 (low-cut)         */
 CvOut  lpf1;               /* VCA_LPF1   PB6 / TIM4_CH1 — POT2 (high-cut)        */
@@ -211,8 +225,10 @@ static void on_midi_cc(uint8_t cc, uint8_t value)
       if (value > 0) set_bypass(!bypass_on);
       break;
 
-    case MIDI_CC_FS2:                    /* footswitch sim: a press toggles LED2 */
-      if (value > 0) led2_on = !led2_on;
+    case MIDI_CC_FS2:                    /* footswitch sim: a press = preset recall toggle
+                                          * (SW_2 tap). Hold-to-save has no momentary-CC
+                                          * analogue, so MIDI only recalls/un-recalls. */
+      if (value > 0) preset_recall_toggle(&preset_state);
       break;
 
     case MIDI_CC_ALL_SOUND_OFF:          /* panic -> force bypass */
@@ -369,6 +385,8 @@ int main(void)
   fsw_init(&sw1, SW_1_GPIO_Port, SW_1_Pin, true);
   fsw_init(&sw2, SW_2_GPIO_Port, SW_2_Pin, true);
 
+  preset_init(&preset_state);   /* SW_2 preset state machine (boots LIVE, LED2 off) */
+
   /* Boot bypassed: drive PA15 low (matches CubeMX reset level + bypass_on). */
   HAL_GPIO_WritePin(JFET_BYPASS_GPIO_Port, JFET_BYPASS_Pin, GPIO_PIN_RESET);
 
@@ -417,7 +435,7 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-    static uint32_t last_pot_ms = 0, last_led_ms = 0;
+    static uint32_t last_pot_ms = 0;
     uint32_t now = HAL_GetTick();
 
     /* Drain + dispatch any MIDI bytes the USART1 RX ISR has queued. Runs every
@@ -426,6 +444,7 @@ int main(void)
 
     /* Poll all 6 pots at 100 Hz. Read pots[i].value (0..1) anywhere. */
     if (now - last_pot_ms >= 10) {
+      float dt_ms = (float)(now - last_pot_ms);   /* ~10 ms; drives preset timing */
       last_pot_ms = now;
       for (int i = 0; i < 6; i++)
         pot_poll(&pots[i]);
@@ -440,6 +459,11 @@ int main(void)
         eff[i] = midi_apply(pots[i].value, midi_rx[i], midi_val[i],
                             &last_knob[i], &last_midi[i], &using_midi[i]);
 
+      /* Feed the resolved values to the preset layer (updates the match cue and,
+       * on commit, is what gets snapshotted). Always non-blocking. */
+      for (int i = 0; i < 6; i++)
+        preset_on_pot_move(&preset_state, i, eff[i]);
+
       /* SW_1 = bypass footswitch. Toggle the JFET network: bypass ON => PA15
        * LOW (MCU out 0), bypass OFF => PA15 HIGH (MCU out 1). */
       if (fsw_rising(&sw1)) {
@@ -447,46 +471,84 @@ int main(void)
         HAL_GPIO_WritePin(JFET_BYPASS_GPIO_Port, JFET_BYPASS_Pin,
                           bypass_on ? GPIO_PIN_RESET : GPIO_PIN_SET);
       }
-      if (fsw_rising(&sw2)) led2_on = !led2_on;
 
-      /* Publish each pot's resolved value as a *target*; the TIM7 ISR slews the
+      /* SW_2 = preset: tap toggles recall/live, ~1 s hold arms a save, a second
+       * hold commits. Each press fires the hold once; a release that hasn't held
+       * long enough is the tap. */
+      if (fsw_rising(&sw2)) sw2_hold_fired = false;
+      if (!sw2_hold_fired && fsw_pressed(&sw2)
+          && fsw_hold_ms(&sw2, now) >= PRESET_HOLD_MS) {
+        preset_hold_fired(&preset_state);
+        sw2_hold_fired = true;
+      }
+      if (fsw_falling(&sw2) && !sw2_hold_fired)
+        preset_recall_toggle(&preset_state);
+
+      /* Recall hold-vs-takeover gate. On entry into PRESET mode (recall or commit)
+       * re-arm every pot: it holds the saved value until the physical knob travels
+       * past PRESET_MOVE_EPS, after which the live knob owns it again (and crossing
+       * back onto the saved value flashes LED2 white). LIVE/SAVE_ARMED are fully
+       * live. ctl[] is the value actually driven; eff[] is the raw knob/MIDI. */
+      PresetMode pm = preset_mode(&preset_state);
+      if (pm == PRESET_PRESET && preset_prev_mode != PRESET_PRESET) {
+        for (int i = 0; i < 6; i++) { pot_live[i] = false; pot_baseline[i] = eff[i]; }
+      }
+      preset_prev_mode = pm;
+
+      float ctl[6];
+      for (int i = 0; i < 6; i++) {
+        if (pm == PRESET_PRESET) {
+          if (!pot_live[i] && fabsf(eff[i] - pot_baseline[i]) > PRESET_MOVE_EPS)
+            pot_live[i] = true;                 /* knob reclaimed this pot */
+          ctl[i] = pot_live[i] ? eff[i] : preset_value(&preset_state, i);
+        } else {
+          ctl[i] = eff[i];                      /* LIVE / SAVE_ARMED: straight through */
+        }
+      }
+
+      /* Publish each pot's driven value as a *target*; the TIM7 ISR slews the
        * actual VCA CV / bias code toward it (anti-zipper — see CTRL_SMOOTH_HZ).
-       * eff[] is the knob-or-MIDI value resolved above, so CC 20..25 drive these
-       * too. Index order matches cv_chan[]: HPF1 LPF1 LPF2 VOLUME GAIN. */
-      cv_target[0] = eff[0];   /* POT1 -> HPF1   */
-      cv_target[1] = eff[1];   /* POT2 -> LPF1   */
-      cv_target[2] = eff[2];   /* POT3 -> LPF2   */
+       * Index order matches cv_chan[]: HPF1 LPF1 LPF2 VOLUME GAIN. */
+      cv_target[0] = ctl[0];   /* POT1 -> HPF1   */
+      cv_target[1] = ctl[1];   /* POT2 -> LPF1   */
+      cv_target[2] = ctl[2];   /* POT3 -> LPF2   */
       /* VOLUME follows POT4 when engaged; forced to full attenuation when
        * bypassed so the wet path is silenced and only the dry JFET signal
        * passes (one signal at a time). control 0 = max CV = ~-50 dB. The slew
        * also gives a soft (a few-ms) bypass transition for free. */
-      cv_target[3] = bypass_on ? 0.0f : eff[3];   /* POT4 -> VOLUME */
-      cv_target[4] = eff[4];   /* POT5 -> GAIN   */
+      cv_target[3] = bypass_on ? 0.0f : ctl[3];   /* POT4 -> VOLUME */
+      cv_target[4] = ctl[4];   /* POT5 -> GAIN   */
 
       /* POT6 -> bias: center (code 63, no gating) -> positive rail (code 127),
        * with a C taper so the bias moves fast off center then fine-tunes near
        * the top. Set the target code here; the ISR glides toward it one code at
        * a time (change-detected SPI), so a fast twist ramps instead of lurching. */
-      float bias_curve = (1.0f - expf(-BIAS_TAPER_K * eff[5]))
+      float bias_curve = (1.0f - expf(-BIAS_TAPER_K * ctl[5]))
                        / (1.0f - expf(-BIAS_TAPER_K));
       bias_target = (int)lroundf(
           (float)BIAS_CODE_MIN
           + bias_curve * ((float)BIAS_CODE_MAX - (float)BIAS_CODE_MIN));
 
-      /* LED1 = GAIN meter: brightness tracks the GAIN VCA's actual (exponential)
-       * gain, so the user sees drive level. Off when bypassed. gain_lin = 10^(dB/20),
-       * dB = -(1-POT5)*1.65V / 0.031 = -(1-POT5)*53.2 dB  (POT5 up = unity = full).
-       * LED2 = SW_2 toggle indicator (full when on). POT6 -> bias gating. */
-      float gain_lin = bypass_on ? 0.0f
-                     : powf(10.0f, -(1.0f - eff[4]) * 2.661f);
-      ledrgb_setBrightness(&led1, gain_lin);
-      ledrgb_setBrightness(&led2, led2_on ? 1.0f : 0.0f);
-    }
+      /* Advance preset timing (breathe phase + match-cue countdown). */
+      preset_tick(&preset_state, dt_ms);
 
-    /* Rainbow pulse-check frame at ~66 fps. */
-    if (now - last_led_ms >= 15) {
-      last_led_ms = now;
-      led_demo_rainbow(&led1, &led2, now);
+      /* LED1 = GAIN meter: brightness tracks the GAIN VCA's actual (exponential)
+       * gain, so the user sees drive level. Off when bypassed. Uses ctl[4] so a
+       * recalled-but-untouched gain reads its preset value, not the raw knob.
+       * gain_lin = 10^(dB/20), dB = -(1-ctl)*1.65V / 0.031 = -(1-ctl)*53.2 dB. */
+      float gain_lin = bypass_on ? 0.0f
+                     : powf(10.0f, -(1.0f - ctl[4]) * 2.661f);
+      ledrgb_setBrightness(&led1, gain_lin);
+
+      /* LED2 = preset status: off (live), solid cyan (recalled), purple flash
+       * when a knob matches its saved value, breathing white
+       * (knob matched the saved value), breathing white (save armed). */
+      if (preset_led_on(&preset_state)) {
+        PresetColor c = preset_led_color(&preset_state);
+        ledrgb_set(&led2, c.r, c.g, c.b);
+      } else {
+        ledrgb_off(&led2);
+      }
     }
   }
   /* USER CODE END 3 */

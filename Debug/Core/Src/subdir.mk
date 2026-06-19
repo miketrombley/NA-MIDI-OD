@@ -14,6 +14,7 @@ C_SRCS += \
 ../Core/Src/main.c \
 ../Core/Src/midi.c \
 ../Core/Src/pot.c \
+../Core/Src/preset.c \
 ../Core/Src/stm32f1xx_hal_msp.c \
 ../Core/Src/stm32f1xx_it.c \
 ../Core/Src/syscalls.c \
@@ -30,6 +31,7 @@ OBJS += \
 ./Core/Src/main.o \
 ./Core/Src/midi.o \
 ./Core/Src/pot.o \
+./Core/Src/preset.o \
 ./Core/Src/stm32f1xx_hal_msp.o \
 ./Core/Src/stm32f1xx_it.o \
 ./Core/Src/syscalls.o \
@@ -46,6 +48,7 @@ C_DEPS += \
 ./Core/Src/main.d \
 ./Core/Src/midi.d \
 ./Core/Src/pot.d \
+./Core/Src/preset.d \
 ./Core/Src/stm32f1xx_hal_msp.d \
 ./Core/Src/stm32f1xx_it.d \
 ./Core/Src/syscalls.d \
@@ -60,7 +63,7 @@ Core/Src/%.o Core/Src/%.su Core/Src/%.cyclo: ../Core/Src/%.c Core/Src/subdir.mk
 clean: clean-Core-2f-Src
 
 clean-Core-2f-Src:
-	-$(RM) ./Core/Src/cvout.cyclo ./Core/Src/cvout.d ./Core/Src/cvout.o ./Core/Src/cvout.su ./Core/Src/dpot_mcp41hv.cyclo ./Core/Src/dpot_mcp41hv.d ./Core/Src/dpot_mcp41hv.o ./Core/Src/dpot_mcp41hv.su ./Core/Src/footswitch.cyclo ./Core/Src/footswitch.d ./Core/Src/footswitch.o ./Core/Src/footswitch.su ./Core/Src/led.cyclo ./Core/Src/led.d ./Core/Src/led.o ./Core/Src/led.su ./Core/Src/led_demo.cyclo ./Core/Src/led_demo.d ./Core/Src/led_demo.o ./Core/Src/led_demo.su ./Core/Src/led_rgb.cyclo ./Core/Src/led_rgb.d ./Core/Src/led_rgb.o ./Core/Src/led_rgb.su ./Core/Src/main.cyclo ./Core/Src/main.d ./Core/Src/main.o ./Core/Src/main.su ./Core/Src/midi.cyclo ./Core/Src/midi.d ./Core/Src/midi.o ./Core/Src/midi.su ./Core/Src/pot.cyclo ./Core/Src/pot.d ./Core/Src/pot.o ./Core/Src/pot.su ./Core/Src/stm32f1xx_hal_msp.cyclo ./Core/Src/stm32f1xx_hal_msp.d ./Core/Src/stm32f1xx_hal_msp.o ./Core/Src/stm32f1xx_hal_msp.su ./Core/Src/stm32f1xx_it.cyclo ./Core/Src/stm32f1xx_it.d ./Core/Src/stm32f1xx_it.o ./Core/Src/stm32f1xx_it.su ./Core/Src/syscalls.cyclo ./Core/Src/syscalls.d ./Core/Src/syscalls.o ./Core/Src/syscalls.su ./Core/Src/sysmem.cyclo ./Core/Src/sysmem.d ./Core/Src/sysmem.o ./Core/Src/sysmem.su ./Core/Src/system_stm32f1xx.cyclo ./Core/Src/system_stm32f1xx.d ./Core/Src/system_stm32f1xx.o ./Core/Src/system_stm32f1xx.su
+	-$(RM) ./Core/Src/cvout.cyclo ./Core/Src/cvout.d ./Core/Src/cvout.o ./Core/Src/cvout.su ./Core/Src/dpot_mcp41hv.cyclo ./Core/Src/dpot_mcp41hv.d ./Core/Src/dpot_mcp41hv.o ./Core/Src/dpot_mcp41hv.su ./Core/Src/footswitch.cyclo ./Core/Src/footswitch.d ./Core/Src/footswitch.o ./Core/Src/footswitch.su ./Core/Src/led.cyclo ./Core/Src/led.d ./Core/Src/led.o ./Core/Src/led.su ./Core/Src/led_demo.cyclo ./Core/Src/led_demo.d ./Core/Src/led_demo.o ./Core/Src/led_demo.su ./Core/Src/led_rgb.cyclo ./Core/Src/led_rgb.d ./Core/Src/led_rgb.o ./Core/Src/led_rgb.su ./Core/Src/main.cyclo ./Core/Src/main.d ./Core/Src/main.o ./Core/Src/main.su ./Core/Src/midi.cyclo ./Core/Src/midi.d ./Core/Src/midi.o ./Core/Src/midi.su ./Core/Src/pot.cyclo ./Core/Src/pot.d ./Core/Src/pot.o ./Core/Src/pot.su ./Core/Src/preset.cyclo ./Core/Src/preset.d ./Core/Src/preset.o ./Core/Src/preset.su ./Core/Src/stm32f1xx_hal_msp.cyclo ./Core/Src/stm32f1xx_hal_msp.d ./Core/Src/stm32f1xx_hal_msp.o ./Core/Src/stm32f1xx_hal_msp.su ./Core/Src/stm32f1xx_it.cyclo ./Core/Src/stm32f1xx_it.d ./Core/Src/stm32f1xx_it.o ./Core/Src/stm32f1xx_it.su ./Core/Src/syscalls.cyclo ./Core/Src/syscalls.d ./Core/Src/syscalls.o ./Core/Src/syscalls.su ./Core/Src/sysmem.cyclo ./Core/Src/sysmem.d ./Core/Src/sysmem.o ./Core/Src/sysmem.su ./Core/Src/system_stm32f1xx.cyclo ./Core/Src/system_stm32f1xx.d ./Core/Src/system_stm32f1xx.o ./Core/Src/system_stm32f1xx.su
 
 .PHONY: clean-Core-2f-Src
 

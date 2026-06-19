@@ -42,6 +42,9 @@ ADC 12 MHz. Already configured; don't touch unless USB timing changes.
   code↔voltage map, POT6 mapping. Read it before touching bias code.
 - **`MIDI.md`** — UART/TRS MIDI input: transport, parser/dispatch architecture,
   the CC map, and the knob↔MIDI hysteresis. Read it before touching MIDI code.
+- **`Preset_Profile.md`** — the SW_2 preset system (`preset.[ch]`): the snapshot,
+  the recall hold-vs-takeover gate, the knob-match cue, and LED2 states. Read it
+  before touching preset, SW_2, or LED2 code.
 
 ## Bias control (SPI3 DPOT — `dpot_mcp41hv.[ch]`)
 MCP41HV31 7-bit digital pot (U15) wired as a voltage divider (P0A=+5V_A,
@@ -58,14 +61,20 @@ SCK=PC10, MOSI=PC12), Mode 0,0, 1-line TX-only, /16. Write = `{0x00, code}`.
 
 ## Control mapping (current)
 - SW_1 → bypass (PA15). LED1 = engage indicator (on = effect in circuit).
-- SW_2 → toggles LED2 (still a pulse check, not a final function).
+- SW_2 → preset: tap = recall / un-recall, ~1 s hold = arm save, second hold =
+  commit. LED2 = preset status (off / cyan / purple match-flash / breathing white).
+  Single RAM-only snapshot — see `Preset_Profile.md`.
 - POT1–POT5 → the 5 SSI2160 VCAs (HPF/LPF/LPF/VOLUME/GAIN) — see `VCA_Profiles.md`.
 - POT6 → bias DPOT: center (code 63, no gating) → positive rail (code 127), C taper
   (`BIAS_TAPER_K` = 4.5). See `Bias_Profile.md`.
 - **MIDI in** (CC 20–25 → POT1–POT6 targets) coexists with the physical pots via
-  last-mover-wins hysteresis; CC29/FS1 → bypass, FS2 → LED2. See `MIDI.md`.
-- The rainbow animation (`led_demo`) is a power-on pulse check, not product UI.
-- **TODO**: finalize SW_2 + LED behavior for product UI (still pulse checks).
+  last-mover-wins hysteresis; CC29/FS1 → bypass, FS2 → preset recall toggle (no
+  momentary-CC analogue for hold-to-save). See `MIDI.md`.
+- The rainbow animation (`led_demo`) was a power-on pulse check; **removed** now
+  that LED1 (gain meter) and LED2 (preset) have real jobs. `led_demo.[ch]` still
+  compiles but is unused.
+- **TODO**: preset persistence to flash (F105 has no EEPROM — needs external SPI
+  flash); multi-slot presets if desired.
 
 ## Control smoothing / anti-zipper (TIM7 ISR)
 A fast knob twist (or a big MIDI jump) used to step the VCA CVs / bias code at the
