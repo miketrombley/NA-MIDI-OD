@@ -180,20 +180,54 @@ ms) and **not** the wiper node above — it's in the **drive section**.
   TIM7 code-glide (§5) / an output RC to keep steps smooth — at 10 ms the RC still
   blends ~20 glide steps (0.5 ms apart @ 2 kHz), so anti-zipper survives.
 
-### Drop the split rail
-We only use the **positive half** (codes 63–127 = center→+5 V); the −5 V_A rail and
-the high-voltage MCP41HV31 are unnecessary for bias. Replace with a **single-supply
-SPI pot** powered 0–5 V: A = +5 V, B = GND, wiper → buffer → 0–5 V `+V_BIAS`.
+### Rail / supply notes (the ±5V_A that feed the divider)
+The bias wiper is a divider between **+5V_A** and **−5V_A**, so rail quality lands
+directly on `+V_BIAS`. Assessed 2026-06-20:
+- **+5V_A** = LP2985-5.0 LDO (U2) off `+9V_A` (R1 10R + 22u/100n pre-filter). Clean,
+  regulated. **BYPASS pin (4) cap: added 10nF** — datasheet low-noise pin; measured
+  only a small improvement on this board but harmless, so kept. (Was floating.)
+- **−5V_A** = TPS60403 charge-pump inverter (U3, ~250 kHz, 1u flying cap), **unregulated**,
+  then **R2 10R + 22u/100n post-filter** (fc ≈ 72 Hz → ~−50 dB at the switch freq).
+  Ripple is well controlled — rails are *not* the dominant standby-noise source.
+- **Why the rails are asymmetric** (§2's −4.35 / +5.0): the positive is a regulated
+  5.00 V LDO; the negative is an *unregulated* charge pump (~12–16 Ω out) **minus the
+  R2 10R drop** → ~−4.35 V. Expected, not a fault.
+- **DESIGN DECISION — keep R2, the lost −5V headroom is intentional.** The R2 10R
+  post-filter trades a bit of negative-rail voltage for ripple rejection, and that's
+  a *wanted* trade: the OPA1677 (and OPA1678 drive stage) are **rail-to-rail in/out**,
+  so they don't need the full −5 V to swing — the noise reduction is worth more than
+  the headroom. Don't "recover" the voltage by shrinking/removing R2. If anything the
+  same logic favors the single-supply respin below (no −5 V needed at all).
+- **Watch:** the charge pump draws ~250 kHz *pulsed* current **from** the clean +5V_A,
+  so it can re-pollute the positive rail. Keep a tight ceramic right at U3's IN pin.
+- Standby noise is therefore mostly the **bias node itself** (no RC after the wiper
+  buffer + R12 now small) → the wiper RC above is the real lever, not the rails.
 
-- **Grab more resolution while you're at it.** 7-bit (128 steps) is a big part of
-  the zipper. An **8-bit (256)** or **10-bit (1024)** part shrinks every step → much
-  quieter before the RC even helps. Best single bias-zipper win available.
+### Drop the split rail — ✅ CHOSEN respin direction (2026-06-20)
+**Decision:** next spin replaces the high-voltage MCP41HV31 + −5V_A with a cheap
+**single-supply 0–5 V SPI pot** (A = +5 V, B = GND, wiper → buffer → 0–5 V `+V_BIAS`).
+Confirmed we only ever use 0→+5 V on the bias, so the negative rail buys nothing here.
+The wiper RC + small R12 + BP cap fixes above ride along on the same spin.
+
+- **Free resolution from using the whole range.** Today only codes ~63–127 are used
+  (positive half) — the bottom half is wasted. A 0–5 V part spreads the *same* musical
+  bias range (~0→+5 V) across **all** codes → ~**2× the steps for the same throw =
+  half the step size ≈ 6 dB less zipper, at the same bit count and chip cost.**
+- **Then grab more bits on top.** 7-bit (128) is a big part of the zipper. An **8-bit
+  (256)** part halves the step again; **10-bit (1024)** nearly kills it. Stacked with
+  the range win above, 8-bit single-supply ≈ 4× finer than today. Best zipper win there is.
+  - Cheap sweet spot: **MCP4151** (8-bit, SPI, single 5 V, ~$1) — drop-in-simple.
+    **MCP4161** if you want the same in a NV-capable part. **AD5293** (10-bit) if you
+    want to chase zipper to the floor (pricier). 10k end-to-end is fine (keeps divider
+    current ~1 mA, low thermal noise).
 - **Simpler map.** A true 0–5 V part gives code 0 = 0 V, mid = 2.5 V, full = 5 V —
   linear and predictable. The whole asymmetric-rail mess in §2–§3 (center = +0.28 V
-  at code 63, 0 V at code ~59) goes away.
-- **Buffer.** If `+V_BIAS` never needs to go below 0 V, the OPA1677 can run
-  single-supply +5 V (it's RRIO) — confirm the downstream gating stage doesn't want
-  a hair below 0 first. Keep −5 V_A only if other circuitry needs it.
+  at code 63, 0 V at code ~59) **goes away** — rewrite §4's POT6 map without the
+  `BIAS_CODE_MIN=63` offset (new min ≈ code 0). Re-find the no-gating reference voltage
+  empirically (§6) and convert to the new linear code.
+- **Buffer.** `+V_BIAS` never goes below 0 V, and the OPA1677 is RRIO, so it can run
+  single-supply +5 V — confirm the downstream drive stage (U4B + input) is happy with
+  a hair-above-0 minimum. Keep −5 V_A only if other circuitry still needs it.
 
 ---
 
@@ -212,6 +246,13 @@ SPI pot** powered 0–5 V: A = +5 V, B = GND, wiper → buffer → 0–5 V `+V_B
       `BIAS_CODE_GATED` if the measured voltage is off (rails may differ).
 - [ ] Decide if the gated end should go further (e.g. full -4.35 V at code 0)
       once the gating character is dialed in by ear.
+- [ ] **Next-spin bias bundle** (all §5) — chosen 2026-06-20:
+      1. swap MCP41HV31 → single-supply 0–5 V SPI pot (8-bit, e.g. MCP4151), drop −5V_A;
+      2. add wiper RC (R series P0W→buffer +in, C to AGND, τ ≈ few ms);
+      3. keep R12 small (10k now in, response-vs-noise per §5 lag note) — revisit with
+         the new RC in place;
+      4. LP2985 BYPASS 10nF (done on bench, populate on spin);
+      5. rewrite §4 POT6 map for the new linear 0–5 V codes (no code-63 offset).
 
 ---
 
