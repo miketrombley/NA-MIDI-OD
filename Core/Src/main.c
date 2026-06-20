@@ -51,6 +51,16 @@
  * curve(x) = (1 - e^-k x) / (1 - e^-k); larger k = more aggressive front end.  */
 #define BIAS_TAPER_K   4.5f
 
+/* Volume taper (POT4): match a Tube Screamer Level pot's sweep. A TS Level is a
+ * linear voltage divider, so its perceived taper is ~ -VOL_TS_DB_DECADE*log10(rot)
+ * (measured fit ~24 dB/decade: 2.2 / 7.6 / 16.6 dB down at 3:00 / 12:00 / 9:00 -
+ * most of the loudness lives in the top of the rotation). We turn that desired
+ * attenuation into a cvout control by dividing through the volume VCA's full
+ * commanded CV span: VC ~3.02 V after the 1k||10k series mod, at -31 mV/dB -> ~97 dB.
+ * See VCA_Profiles.md. */
+#define VOL_TS_DB_DECADE  24.0f   /* TS Level taper steepness (dB per decade of rot) */
+#define VOL_CV_SPAN_DB    97.4f   /* full-scale commanded atten: 3.02 V / 31 mV-per-dB */
+
 /* --- Control smoothing (anti-zipper, TIM7 ISR) ----------------------------
  * The 100 Hz loop only sets *targets*; a TIM7 update ISR at CTRL_SMOOTH_HZ does
  * the actual output writes — (a) one-pole-slews each VCA's CV toward its target
@@ -534,11 +544,27 @@ int main(void)
       cv_target[0] = ctl[0];   /* POT1 -> HPF1   */
       cv_target[1] = ctl[1];   /* POT2 -> LPF1   */
       cv_target[2] = ctl[2];   /* POT3 -> LPF2   */
-      /* VOLUME follows POT4 when engaged; forced to full attenuation when
-       * bypassed so the wet path is silenced and only the dry JFET signal
-       * passes (one signal at a time). control 0 = max CV = ~-50 dB. The slew
-       * also gives a soft (a few-ms) bypass transition for free. */
-      cv_target[3] = bypass_on ? 0.0f : ctl[3];   /* POT4 -> VOLUME */
+      /* VOLUME (POT4) with a Tube-Screamer Level taper. The raw knob is linear,
+       * but a TS Level pot crams most of the loudness into the top of the sweep
+       * (only ~7.6 dB down at noon). Reshape POT4 to that curve: desired
+       * attenuation = -VOL_TS_DB_DECADE*log10(knob), mapped through the VCA's full
+       * commanded CV span (VOL_CV_SPAN_DB). Knob max = loudest (control 1); knob
+       * min = deepest mute (control 0 = max CV, ~-55 dB floor). Forced to full
+       * attenuation when bypassed so only the dry JFET path passes; the slew also
+       * gives a soft (few-ms) bypass transition for free. */
+      float vol_curve;
+      {
+        float p = ctl[3];                       /* POT4 / MIDI volume 0..1 */
+        if (p <= 0.0f) {
+          vol_curve = 0.0f;                     /* hard bottom = deepest mute */
+        } else {
+          float atten_db = -VOL_TS_DB_DECADE * log10f(p);   /* >=0 dB below max */
+          vol_curve = 1.0f - atten_db / VOL_CV_SPAN_DB;
+          if (vol_curve < 0.0f) vol_curve = 0.0f;
+          else if (vol_curve > 1.0f) vol_curve = 1.0f;
+        }
+      }
+      cv_target[3] = bypass_on ? 0.0f : vol_curve;   /* POT4 -> VOLUME */
       cv_target[4] = ctl[4];   /* POT5 -> GAIN   */
 
       /* POT6 -> bias: center (code 63, no gating) -> positive rail (code 127),
