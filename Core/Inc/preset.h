@@ -77,6 +77,12 @@ void preset_hold_fired(Preset* p);      /* ~1 s hold crossed: arm/commit */
 /* Control-rate housekeeping; dt_ms since the last call. */
 void preset_tick(Preset* p, float dt_ms);
 
+/* Inject a saved snapshot (e.g. loaded from external flash at boot): copies the
+ * six values into the preset slot, marks them aligned, and sets has_preset so a
+ * tap can recall it. Does NOT change mode (the host stays LIVE at boot). Pure —
+ * no HAL/flash deps; the persistence layer (preset_store) feeds it. */
+void preset_load_snapshot(Preset* p, const float values[PRESET_NUM_POTS]);
+
 /* Held recall value the host applies for an untouched knob while in PRESET. */
 float preset_value(const Preset* p, int idx);
 

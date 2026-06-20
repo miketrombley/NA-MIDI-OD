@@ -45,6 +45,9 @@ ADC 12 MHz. Already configured; don't touch unless USB timing changes.
 - **`Preset_Profile.md`** — the SW_2 preset system (`preset.[ch]`): the snapshot,
   the recall hold-vs-takeover gate, the knob-match cue, and LED2 states. Read it
   before touching preset, SW_2, or LED2 code.
+- **`Flash_Profile.md`** — the W25Q16JV external SPI NOR (`w25q.[ch]`) on SPI2,
+  the flash memory map, and preset persistence (`preset_store.[ch]`). Read it
+  before touching flash, preset persistence, or planning the bootloader.
 
 ## Bias control (SPI3 DPOT — `dpot_mcp41hv.[ch]`)
 MCP41HV31 7-bit digital pot (U15) wired as a voltage divider (P0A=+5V_A,
@@ -58,6 +61,31 @@ SCK=PC10, MOSI=PC12), Mode 0,0, 1-line TX-only, /16. Write = `{0x00, code}`.
 - Driver change-detects (`mcp41hv_set_code`) so it can be called every 100 Hz
   loop with no zipper noise. **Don't** add an open `while(BSY)` wait — in 1-line
   BIDIMODE the BSY flag never clears and it hangs the MCU on boot.
+
+## External flash (SPI2 NOR — `w25q.[ch]` + `preset_store.[ch]`)
+Winbond **W25Q16JVSNIQ**, 2 MB SPI NOR on **SPI2** (SCK=PB13, MISO=PB14,
+MOSI=PB15, CS=PB12/`SPI2_CS`), full-duplex Mode 0, /16 = 2.25 MHz. Non-volatile
+store for presets now (the F105 has no EEPROM), firmware images for the
+PK-Bootloader later. Full detail in `Flash_Profile.md`; the load-bearing bits:
+- **SPI2 was already in CubeMX** (full-duplex master + `SPI2_CS` GPIO idle-high)
+  — integrating the chip needed **zero `.ioc` changes**, just the code driver.
+- `w25q.[ch]` is generic blocking single-IO SPI (JEDEC ID, read, page-program,
+  sector/chip erase, reset). `w25q_init` wakes the part + reads the ID; if it
+  doesn't answer, `flash.present=false` and all `preset_store_*` no-op — a
+  missing/dead chip never bricks boot.
+- **Erase/program BLOCK** (sector erase ≤ ~400 ms). Only call from boot or an
+  explicit gesture — never an ISR or the control hot path.
+- **Flash map**: `0x000000–0x1EFFFF` reserved for future bootloader firmware
+  images; `0x1F0000–0x1FFFFF` config block; **presets in the last 4 KB sector
+  `0x1FF000`** (`PRESET_STORE_ADDR`).
+- **Presets persist**: boot loads the saved snapshot via `preset_store_load`
+  (still boots LIVE; first SW_2 tap recalls it); the **commit** (second SW_2
+  hold) calls `preset_store_save` (one CRC-checked record, erase-in-place).
+  `preset.c` stays HAL-free — `preset_store.c` owns the on-flash layout, and
+  `preset_load_snapshot()` is the clean injection point.
+- New `Core/Src/w25q.c` + `Core/Src/preset_store.c` are in the build
+  (`Debug/Core/Src/subdir.mk` + `Debug/objects.list`), same as the `midi.c` note
+  below — an IDE rescan re-adds them; the manual entries keep CLI `make` working.
 
 ## Control mapping (current)
 - SW_1 → bypass (PA15). LED1 = engage indicator: **solid red when the effect is
@@ -76,8 +104,9 @@ SCK=PC10, MOSI=PC12), Mode 0,0, 1-line TX-only, /16. Write = `{0x00, code}`.
 - The rainbow animation (`led_demo`) was a power-on pulse check; **removed** now
   that LED1 (engage) and LED2 (preset) have real jobs. `led_demo.[ch]` still
   compiles but is unused.
-- **TODO**: preset persistence to flash (F105 has no EEPROM — needs external SPI
-  flash); multi-slot presets if desired.
+- Preset persistence to flash is **done** — saved on the W25Q16JV (SPI2),
+  reloaded at boot (see the External flash section + `Flash_Profile.md`).
+  **TODO**: multi-slot presets if desired (one record per config-block sector).
 
 ## Control smoothing / anti-zipper (TIM7 ISR)
 A fast knob twist (or a big MIDI jump) used to step the VCA CVs / bias code at the

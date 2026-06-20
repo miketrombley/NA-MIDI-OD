@@ -1,0 +1,3 @@
+../Core/Src/preset_store.c:35:17:crc32	3
+../Core/Src/preset_store.c:46:6:preset_store_load	7
+../Core/Src/preset_store.c:64:6:preset_store_save	5

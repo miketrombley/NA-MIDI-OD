@@ -5,6 +5,7 @@
 ../Core/Src/preset.c:77:6:preset_recall_toggle	7
 ../Core/Src/preset.c:98:6:preset_hold_fired	3
 ../Core/Src/preset.c:118:6:preset_tick	2
-../Core/Src/preset.c:124:7:preset_value	3
-../Core/Src/preset.c:129:6:preset_led_on	1
-../Core/Src/preset.c:134:13:preset_led_color	3
+../Core/Src/preset.c:124:6:preset_load_snapshot	2
+../Core/Src/preset.c:134:7:preset_value	3
+../Core/Src/preset.c:139:6:preset_led_on	1
+../Core/Src/preset.c:144:13:preset_led_color	3

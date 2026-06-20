@@ -12,9 +12,10 @@ and the apply path (writing `cv_target[]` / `bias_target`).
 ## What a preset is
 Six floats (0..1), one per pot, = the **resolved** value `eff[i]` (physical knob
 *or* MIDI CC, last-mover-wins) at snapshot time. Index order matches POT1..POT6:
-HPF1 / LPF1 / LPF2 / VOLUME / GAIN / bias. Lives in RAM (`Preset.preset[6]`),
-**lost on power-cycle** — the F105 has no EEPROM; flash persistence (external SPI
-flash) is a future add.
+HPF1 / LPF1 / LPF2 / VOLUME / GAIN / bias. Held in RAM (`Preset.preset[6]`) and
+**persisted to external SPI flash** so it survives a power-cycle (the F105 has no
+EEPROM). `preset.c` itself stays HAL-free; persistence lives in
+`preset_store.[ch]` on the W25Q16JV — see `Flash_Profile.md`.
 
 Snapshotting `eff[]` (not the driven value) means a save taken **while bypassed**
 stores the real POT4/VOLUME setting, not the forced-mute 0 — expected/correct.
@@ -37,7 +38,9 @@ Driven from the 100 Hz loop in `main.c` via the `Footswitch` wrapper
 - **~1 s hold** (`PRESET_HOLD_MS = 1000`) → `preset_hold_fired()`:
   LIVE/PRESET → arm (SAVE_ARMED, breathe) · SAVE_ARMED → **commit** the snapshot
   → PRESET. Each press fires the hold once (`sw2_hold_fired`); to do the second
-  hold you release and press again.
+  hold you release and press again. On the **commit** edge `main.c` also calls
+  `preset_store_save()` to write the snapshot to flash (the erase blocks the loop
+  briefly — see `Flash_Profile.md`). At boot, `preset_store_load()` reloads it.
 
 **MIDI:** CC29 (`MIDI_CC_FS2`) press = `preset_recall_toggle()` (a tap). There is
 no momentary-CC analogue for hold-to-save, so MIDI only recalls/un-recalls.
@@ -85,12 +88,19 @@ is 1.0 (set in `main.c`), so these render identically to InTheWater.
   color / brightness / breathe (all matched to InTheWater).
 
 ## Build
-`Core/Src/preset.c` is in `Debug/Core/Src/subdir.mk` + `Debug/objects.list` (same
-manual-entry pattern as `midi.c`; STM32CubeIDE re-adds it on a project scan, the
-manual entries keep CLI `make` working).
+`Core/Src/preset.c` and `Core/Src/preset_store.c` are in `Debug/Core/Src/subdir.mk`
++ `Debug/objects.list` (same manual-entry pattern as `midi.c`; STM32CubeIDE re-adds
+them on a project scan, the manual entries keep CLI `make` working).
 
 ## Future / planned
-- **Flash persistence** — external SPI flash (no EEPROM on F105). Save on commit,
-  load at boot; add a magic/version word when serializing.
+- **Flash persistence** — **done**: `preset_store.[ch]` on the W25Q16JV (SPI2),
+  CRC-checked record with magic/version, save on commit + load at boot. See
+  `Flash_Profile.md`.
 - **Multiple slots** — `preset[]`/`aligned[]` become 2-D + a slot index; needs a
   selection scheme (only SW_2 is free — likely MIDI Program Change or double-tap).
+  On flash, rotate one record per config-block sector (newest-valid-CRC wins).
+- **Factory preset** — a built-in default snapshot shipped with the firmware, used
+  when flash is blank/corrupt and as a "restore to factory" target (e.g. a reset
+  gesture). Bake the six values into a `const` in firmware; on a failed
+  `preset_store_load`, seed `preset_load_snapshot()` from it so the unit always
+  has a sane recall, and optionally write it to flash on first boot.

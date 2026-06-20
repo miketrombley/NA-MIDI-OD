@@ -121,6 +121,16 @@ void preset_tick(Preset* p, float dt_ms)
     if (p->catch_flash_ms > 0.0f) p->catch_flash_ms -= dt_ms;   /* purple flash decay */
 }
 
+void preset_load_snapshot(Preset* p, const float values[PRESET_NUM_POTS])
+{
+    for (int i = 0; i < PRESET_NUM_POTS; ++i) {
+        p->preset[i]  = values[i];
+        p->aligned[i] = true;
+    }
+    p->has_preset = true;
+    /* mode stays as-is (host boots LIVE); first SW_2 tap recalls this snapshot. */
+}
+
 float preset_value(const Preset* p, int idx)
 {
     return (idx >= 0 && idx < PRESET_NUM_POTS) ? p->preset[idx] : 0.0f;

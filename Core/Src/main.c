@@ -28,7 +28,9 @@
 #include "dpot_mcp41hv.h"   /* MCP41HV31 bias control (SPI3) */
 #include "midi.h"           /* UART/TRS MIDI input (USART1 @ 31250) */
 #include "midi_map.h"       /* CC number assignments */
-#include "preset.h"         /* SW_2 preset snapshot/recall (single, RAM-only) */
+#include "preset.h"         /* SW_2 preset snapshot/recall state machine       */
+#include "w25q.h"           /* W25Q16JV external SPI NOR flash (SPI2, CS=PB12)  */
+#include "preset_store.h"   /* preset persistence on the W25Q flash            */
 #include <math.h>   /* powf — LED1 gain-curve meter; fabsf — MIDI hysteresis */
 /* USER CODE END Includes */
 
@@ -103,6 +105,8 @@ bool   bypass_on = true;   /* JFET bypass network: true = bypass ON (PA15 LOW,
  * to the live knob once it travels past PRESET_MOVE_EPS. pot_live[] latches that
  * hand-off; it's re-armed for all pots whenever we (re)enter PRESET mode. */
 Preset preset_state;
+W25Q   flash;                /* W25Q16JV external NOR (SPI2/PB12); presets persist
+                                here, future PK-Bootloader firmware images too.   */
 #define PRESET_HOLD_MS    1000u    /* SW_2 hold to arm/commit a save             */
 #define PRESET_MOVE_EPS   0.02f    /* knob travel that reclaims a recalled pot   */
 bool       sw2_hold_fired = false; /* the current SW_2 hold already armed/committed */
@@ -387,6 +391,17 @@ int main(void)
 
   preset_init(&preset_state);   /* SW_2 preset state machine (boots LIVE, LED2 off) */
 
+  /* --- External flash (W25Q16JV, SPI2, CS = PB12 / SPI2_CS) ------------------
+   * 2 MB SPI NOR. Today: persists the preset snapshot (preset_store, last 4 KB
+   * sector) so a saved preset survives a power-cycle — the F105 has no EEPROM.
+   * Later: staging area for PK-Bootloader firmware images (bottom of the array;
+   * see Flash_Profile.md). w25q_init wakes the part and reads the JEDEC ID; if
+   * it doesn't answer (flash.present == false) save/load no-op and the unit just
+   * runs RAM-only, so a missing/dead chip never bricks boot.
+   * SPI2 is already up (MX_SPI2_Init, full-duplex Mode 0 @2.25 MHz). */
+  w25q_init(&flash, &hspi2, SPI2_CS_GPIO_Port, SPI2_CS_Pin);
+  preset_store_load(&flash, &preset_state);   /* loads snapshot if a valid one exists */
+
   /* Boot bypassed: drive PA15 low (matches CubeMX reset level + bypass_on). */
   HAL_GPIO_WritePin(JFET_BYPASS_GPIO_Port, JFET_BYPASS_Pin, GPIO_PIN_RESET);
 
@@ -478,8 +493,15 @@ int main(void)
       if (fsw_rising(&sw2)) sw2_hold_fired = false;
       if (!sw2_hold_fired && fsw_pressed(&sw2)
           && fsw_hold_ms(&sw2, now) >= PRESET_HOLD_MS) {
+        /* A second hold (SAVE_ARMED -> PRESET) is the COMMIT; persist the fresh
+         * snapshot to flash so it survives a power-cycle. The erase+program
+         * blocks here for up to a few hundred ms — fine for this deliberate
+         * gesture (MIDI RX is buffered in its ISR, the TIM7 smoother keeps the
+         * outputs gliding; only the LEDs/loop pause briefly). */
+        bool committing = (preset_mode(&preset_state) == PRESET_SAVE_ARMED);
         preset_hold_fired(&preset_state);
         sw2_hold_fired = true;
+        if (committing) preset_store_save(&flash, &preset_state);
       }
       if (fsw_falling(&sw2) && !sw2_hold_fired)
         preset_recall_toggle(&preset_state);

@@ -153,6 +153,33 @@ P0W (pin 12) ──[ R ]──┬── OPA1677 +in (pin 3)
   **DC voltage**, but the wiper R *is* in series with the RC, so it affects the
   **time constant** — which is exactly why the external R should dominate it.
 
+### Downstream bias-response lag — R12·C19 ≈ 1 s (different node)
+**Symptom:** twist POT6 and `+V_BIAS` (buffer output) moves *immediately*, but the
+audible bias change drags in over ~1 s. This is **not** the firmware glide (tens of
+ms) and **not** the wiper node above — it's in the **drive section**.
+
+- `+V_BIAS` feeds the U4B (OPA1678) **non-inverting input through R12 (1M)**, and
+  that node also has **C19 (1µF)** in series to `DRIVE_IN`. The op-amp + input draws
+  ~no current, so the only way the node's DC can follow a new `+V_BIAS` is to charge
+  C19 through R12:
+
+  ```
+  τ = R12 · C19 = 1 MΩ · 1 µF = 1.0 s   (≈63% in 1 s, settled in ~3–5 s)
+  ```
+
+  That RC is exactly the lag you feel. The DPOT + OPA1677 buffer are fast (low-Z
+  output); the delay is entirely downstream of `+V_BIAS`.
+- **Speeding it up (next spin):** lower R12. C19/R12 is also the input high-pass
+  corner (`fc = 1/(2π·R12·C19)`), so:
+  - R12 = 1M  → τ = 1.0 s,  fc ≈ 0.16 Hz  (current — laggy but transparent)
+  - R12 = 100k → τ = 100 ms, fc ≈ 1.6 Hz  (snappy, still fully transparent)
+  - R12 = 10k  → τ = 10 ms,  fc ≈ 16 Hz   (feels instant; fc still below guitar's
+    ~82 Hz fundamental, so fine. **10k is OK.**)
+- Shrinking C19 raises fc faster per unit, so **reduce R12** as the lever, not C19.
+- ⚠️ This 1 s lag currently *masks* some bias zipper. If you drop R12, lean on the
+  TIM7 code-glide (§5) / an output RC to keep steps smooth — at 10 ms the RC still
+  blends ~20 glide steps (0.5 ms apart @ 2 kHz), so anti-zipper survives.
+
 ### Drop the split rail
 We only use the **positive half** (codes 63–127 = center→+5 V); the −5 V_A rail and
 the high-voltage MCP41HV31 are unnecessary for bias. Replace with a **single-supply
