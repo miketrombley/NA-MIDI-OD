@@ -374,7 +374,12 @@ int main(void)
   cvout_init(&lpf1,   &htim4, TIM_CHANNEL_1, 0.555f, 0.000f); /* POT2 (inv.) */
   cvout_init(&lpf2,   &htim4, TIM_CHANNEL_4, 0.555f, 0.000f); /* POT3 */
   cvout_init(&volume, &htim4, TIM_CHANNEL_3, 1.000f, 0.000f); /* POT4 */
-  cvout_init(&gain,   &htim4, TIM_CHANNEL_2, 1.000f, 0.000f); /* POT5 */
+  cvout_init(&gain,   &htim4, TIM_CHANNEL_2, 0.680f, 0.000f); /* POT5 — min gain
+                            lifted to match the TS min-drive output level. duty 0.81
+                            only gave +4.3 dB (gain VCA has a ~-13 dB feedthrough
+                            floor that swallows the first slice of CV); 0.68 clears
+                            it to land the peak ~-2.5 dB. Max gain unchanged.
+                            See VCA_Profiles.md. */
   HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_2);   /* VC_HPF1    (POT1) */
   HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_1);   /* VCA_LPF1   (POT2) */
   HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_4);   /* VCA_LPF2   (POT3) */

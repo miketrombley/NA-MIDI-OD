@@ -2679,18 +2679,18 @@ int main(void)
   /* PA15 (JFET_BYPASS) is JTDI by default. Disable JTAG — keeping SW-debug so
    * the ST-Link still connects — to free PA15 (and PB3/PB4) for GPIO. */
   __HAL_RCC_AFIO_CLK_ENABLE();
- 80016e2:	4ba4      	ldr	r3, [pc, #656]	@ (8001974 <main+0x2c4>)
+ 80016e2:	4ba3      	ldr	r3, [pc, #652]	@ (8001970 <main+0x2c0>)
  80016e4:	699b      	ldr	r3, [r3, #24]
- 80016e6:	4aa3      	ldr	r2, [pc, #652]	@ (8001974 <main+0x2c4>)
+ 80016e6:	4aa2      	ldr	r2, [pc, #648]	@ (8001970 <main+0x2c0>)
  80016e8:	f043 0301 	orr.w	r3, r3, #1
  80016ec:	6193      	str	r3, [r2, #24]
- 80016ee:	4ba1      	ldr	r3, [pc, #644]	@ (8001974 <main+0x2c4>)
+ 80016ee:	4ba0      	ldr	r3, [pc, #640]	@ (8001970 <main+0x2c0>)
  80016f0:	699b      	ldr	r3, [r3, #24]
  80016f2:	f003 0301 	and.w	r3, r3, #1
  80016f6:	63fb      	str	r3, [r7, #60]	@ 0x3c
  80016f8:	6bfb      	ldr	r3, [r7, #60]	@ 0x3c
   __HAL_AFIO_REMAP_SWJ_NOJTAG();
- 80016fa:	4b9f      	ldr	r3, [pc, #636]	@ (8001978 <main+0x2c8>)
+ 80016fa:	4b9e      	ldr	r3, [pc, #632]	@ (8001974 <main+0x2c4>)
  80016fc:	685b      	ldr	r3, [r3, #4]
  80016fe:	65bb      	str	r3, [r7, #88]	@ 0x58
  8001700:	6dbb      	ldr	r3, [r7, #88]	@ 0x58
@@ -2699,7 +2699,7 @@ int main(void)
  8001708:	6dbb      	ldr	r3, [r7, #88]	@ 0x58
  800170a:	f043 7300 	orr.w	r3, r3, #33554432	@ 0x2000000
  800170e:	65bb      	str	r3, [r7, #88]	@ 0x58
- 8001710:	4a99      	ldr	r2, [pc, #612]	@ (8001978 <main+0x2c8>)
+ 8001710:	4a98      	ldr	r2, [pc, #608]	@ (8001974 <main+0x2c4>)
  8001712:	6dbb      	ldr	r3, [r7, #88]	@ 0x58
  8001714:	6053      	str	r3, [r2, #4]
 
@@ -2713,8 +2713,8 @@ int main(void)
  8001722:	9300      	str	r3, [sp, #0]
  8001724:	2304      	movs	r3, #4
  8001726:	2200      	movs	r2, #0
- 8001728:	4994      	ldr	r1, [pc, #592]	@ (800197c <main+0x2cc>)
- 800172a:	4895      	ldr	r0, [pc, #596]	@ (8001980 <main+0x2d0>)
+ 8001728:	4993      	ldr	r1, [pc, #588]	@ (8001978 <main+0x2c8>)
+ 800172a:	4894      	ldr	r0, [pc, #592]	@ (800197c <main+0x2cc>)
  800172c:	f7ff fd8b 	bl	8001246 <ledrgb_init>
               TIM_CHANNEL_1, TIM_CHANNEL_2, TIM_CHANNEL_3,
               LED_POLARITY_ACTIVE_LOW, 1.0f);
@@ -2726,14 +2726,14 @@ int main(void)
  8001738:	9303      	str	r3, [sp, #12]
  800173a:	230c      	movs	r3, #12
  800173c:	9302      	str	r3, [sp, #8]
- 800173e:	4b91      	ldr	r3, [pc, #580]	@ (8001984 <main+0x2d4>)
+ 800173e:	4b90      	ldr	r3, [pc, #576]	@ (8001980 <main+0x2d0>)
  8001740:	9301      	str	r3, [sp, #4]
  8001742:	2308      	movs	r3, #8
  8001744:	9300      	str	r3, [sp, #0]
- 8001746:	4b8f      	ldr	r3, [pc, #572]	@ (8001984 <main+0x2d4>)
+ 8001746:	4b8e      	ldr	r3, [pc, #568]	@ (8001980 <main+0x2d0>)
  8001748:	220c      	movs	r2, #12
- 800174a:	498c      	ldr	r1, [pc, #560]	@ (800197c <main+0x2cc>)
- 800174c:	488e      	ldr	r0, [pc, #568]	@ (8001988 <main+0x2d8>)
+ 800174a:	498b      	ldr	r1, [pc, #556]	@ (8001978 <main+0x2c8>)
+ 800174c:	488d      	ldr	r0, [pc, #564]	@ (8001984 <main+0x2d4>)
  800174e:	f7ff fd47 	bl	80011e0 <ledrgb_init_split>
    * the off duty and binds the structs.) */
 
@@ -2741,11 +2741,11 @@ int main(void)
    * (~1.1 kHz). Force 50 kHz like TIM2/TIM3 so the 10k/220n RC rejects the PWM
    * ripple (survives regen; mirror Period=1439 in CubeMX if you want). */
   __HAL_TIM_SET_AUTORELOAD(&htim4, 1439);
- 8001752:	4b8e      	ldr	r3, [pc, #568]	@ (800198c <main+0x2dc>)
+ 8001752:	4b8d      	ldr	r3, [pc, #564]	@ (8001988 <main+0x2d8>)
  8001754:	681b      	ldr	r3, [r3, #0]
  8001756:	f240 529f 	movw	r2, #1439	@ 0x59f
  800175a:	62da      	str	r2, [r3, #44]	@ 0x2c
- 800175c:	4b8b      	ldr	r3, [pc, #556]	@ (800198c <main+0x2dc>)
+ 800175c:	4b8a      	ldr	r3, [pc, #552]	@ (8001988 <main+0x2d8>)
  800175e:	f240 529f 	movw	r2, #1439	@ 0x59f
  8001762:	60da      	str	r2, [r3, #12]
    *   POT1 HPF1:   down = max cut (~600 Hz)  up = open (20 Hz)
@@ -2754,329 +2754,334 @@ int main(void)
    *   POT4 VOLUME: down = lowest out         up = highest (unity)
    *   POT5 GAIN:   down = lowest in          up = highest (unity) */
   cvout_init(&hpf1,   &htim2, TIM_CHANNEL_2, 0.000f, 0.555f); /* POT1 (inv.) */
- 8001764:	4b8a      	ldr	r3, [pc, #552]	@ (8001990 <main+0x2e0>)
+ 8001764:	4b89      	ldr	r3, [pc, #548]	@ (800198c <main+0x2dc>)
  8001766:	9300      	str	r3, [sp, #0]
  8001768:	f04f 0300 	mov.w	r3, #0
  800176c:	2204      	movs	r2, #4
- 800176e:	4985      	ldr	r1, [pc, #532]	@ (8001984 <main+0x2d4>)
- 8001770:	4888      	ldr	r0, [pc, #544]	@ (8001994 <main+0x2e4>)
+ 800176e:	4984      	ldr	r1, [pc, #528]	@ (8001980 <main+0x2d0>)
+ 8001770:	4887      	ldr	r0, [pc, #540]	@ (8001990 <main+0x2e0>)
  8001772:	f7ff fa21 	bl	8000bb8 <cvout_init>
   cvout_init(&lpf1,   &htim4, TIM_CHANNEL_1, 0.555f, 0.000f); /* POT2 (inv.) */
  8001776:	f04f 0300 	mov.w	r3, #0
  800177a:	9300      	str	r3, [sp, #0]
- 800177c:	4b84      	ldr	r3, [pc, #528]	@ (8001990 <main+0x2e0>)
+ 800177c:	4b83      	ldr	r3, [pc, #524]	@ (800198c <main+0x2dc>)
  800177e:	2200      	movs	r2, #0
- 8001780:	4982      	ldr	r1, [pc, #520]	@ (800198c <main+0x2dc>)
- 8001782:	4885      	ldr	r0, [pc, #532]	@ (8001998 <main+0x2e8>)
+ 8001780:	4981      	ldr	r1, [pc, #516]	@ (8001988 <main+0x2d8>)
+ 8001782:	4884      	ldr	r0, [pc, #528]	@ (8001994 <main+0x2e4>)
  8001784:	f7ff fa18 	bl	8000bb8 <cvout_init>
   cvout_init(&lpf2,   &htim4, TIM_CHANNEL_4, 0.555f, 0.000f); /* POT3 */
  8001788:	f04f 0300 	mov.w	r3, #0
  800178c:	9300      	str	r3, [sp, #0]
- 800178e:	4b80      	ldr	r3, [pc, #512]	@ (8001990 <main+0x2e0>)
+ 800178e:	4b7f      	ldr	r3, [pc, #508]	@ (800198c <main+0x2dc>)
  8001790:	220c      	movs	r2, #12
- 8001792:	497e      	ldr	r1, [pc, #504]	@ (800198c <main+0x2dc>)
- 8001794:	4881      	ldr	r0, [pc, #516]	@ (800199c <main+0x2ec>)
+ 8001792:	497d      	ldr	r1, [pc, #500]	@ (8001988 <main+0x2d8>)
+ 8001794:	4880      	ldr	r0, [pc, #512]	@ (8001998 <main+0x2e8>)
  8001796:	f7ff fa0f 	bl	8000bb8 <cvout_init>
   cvout_init(&volume, &htim4, TIM_CHANNEL_3, 1.000f, 0.000f); /* POT4 */
  800179a:	f04f 0300 	mov.w	r3, #0
  800179e:	9300      	str	r3, [sp, #0]
  80017a0:	f04f 537e 	mov.w	r3, #1065353216	@ 0x3f800000
  80017a4:	2208      	movs	r2, #8
- 80017a6:	4979      	ldr	r1, [pc, #484]	@ (800198c <main+0x2dc>)
- 80017a8:	487d      	ldr	r0, [pc, #500]	@ (80019a0 <main+0x2f0>)
+ 80017a6:	4978      	ldr	r1, [pc, #480]	@ (8001988 <main+0x2d8>)
+ 80017a8:	487c      	ldr	r0, [pc, #496]	@ (800199c <main+0x2ec>)
  80017aa:	f7ff fa05 	bl	8000bb8 <cvout_init>
-  cvout_init(&gain,   &htim4, TIM_CHANNEL_2, 1.000f, 0.000f); /* POT5 */
+  cvout_init(&gain,   &htim4, TIM_CHANNEL_2, 0.680f, 0.000f); /* POT5 — min gain
  80017ae:	f04f 0300 	mov.w	r3, #0
  80017b2:	9300      	str	r3, [sp, #0]
- 80017b4:	f04f 537e 	mov.w	r3, #1065353216	@ 0x3f800000
- 80017b8:	2204      	movs	r2, #4
- 80017ba:	4974      	ldr	r1, [pc, #464]	@ (800198c <main+0x2dc>)
- 80017bc:	4879      	ldr	r0, [pc, #484]	@ (80019a4 <main+0x2f4>)
- 80017be:	f7ff f9fb 	bl	8000bb8 <cvout_init>
+ 80017b4:	4b7a      	ldr	r3, [pc, #488]	@ (80019a0 <main+0x2f0>)
+ 80017b6:	2204      	movs	r2, #4
+ 80017b8:	4973      	ldr	r1, [pc, #460]	@ (8001988 <main+0x2d8>)
+ 80017ba:	487a      	ldr	r0, [pc, #488]	@ (80019a4 <main+0x2f4>)
+ 80017bc:	f7ff f9fc 	bl	8000bb8 <cvout_init>
+                            lifted to match the TS min-drive output level. duty 0.81
+                            only gave +4.3 dB (gain VCA has a ~-13 dB feedthrough
+                            floor that swallows the first slice of CV); 0.68 clears
+                            it to land the peak ~-2.5 dB. Max gain unchanged.
+                            See VCA_Profiles.md. */
   HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_2);   /* VC_HPF1    (POT1) */
- 80017c2:	2104      	movs	r1, #4
- 80017c4:	486f      	ldr	r0, [pc, #444]	@ (8001984 <main+0x2d4>)
- 80017c6:	f005 f8ed 	bl	80069a4 <HAL_TIM_PWM_Start>
+ 80017c0:	2104      	movs	r1, #4
+ 80017c2:	486f      	ldr	r0, [pc, #444]	@ (8001980 <main+0x2d0>)
+ 80017c4:	f005 f8ee 	bl	80069a4 <HAL_TIM_PWM_Start>
   HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_1);   /* VCA_LPF1   (POT2) */
- 80017ca:	2100      	movs	r1, #0
- 80017cc:	486f      	ldr	r0, [pc, #444]	@ (800198c <main+0x2dc>)
- 80017ce:	f005 f8e9 	bl	80069a4 <HAL_TIM_PWM_Start>
+ 80017c8:	2100      	movs	r1, #0
+ 80017ca:	486f      	ldr	r0, [pc, #444]	@ (8001988 <main+0x2d8>)
+ 80017cc:	f005 f8ea 	bl	80069a4 <HAL_TIM_PWM_Start>
   HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_4);   /* VCA_LPF2   (POT3) */
- 80017d2:	210c      	movs	r1, #12
- 80017d4:	486d      	ldr	r0, [pc, #436]	@ (800198c <main+0x2dc>)
- 80017d6:	f005 f8e5 	bl	80069a4 <HAL_TIM_PWM_Start>
+ 80017d0:	210c      	movs	r1, #12
+ 80017d2:	486d      	ldr	r0, [pc, #436]	@ (8001988 <main+0x2d8>)
+ 80017d4:	f005 f8e6 	bl	80069a4 <HAL_TIM_PWM_Start>
   HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_3);   /* VCA_VOLUME (POT4) */
- 80017da:	2108      	movs	r1, #8
- 80017dc:	486b      	ldr	r0, [pc, #428]	@ (800198c <main+0x2dc>)
- 80017de:	f005 f8e1 	bl	80069a4 <HAL_TIM_PWM_Start>
+ 80017d8:	2108      	movs	r1, #8
+ 80017da:	486b      	ldr	r0, [pc, #428]	@ (8001988 <main+0x2d8>)
+ 80017dc:	f005 f8e2 	bl	80069a4 <HAL_TIM_PWM_Start>
   HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_2);   /* VCA_GAIN   (POT5) */
- 80017e2:	2104      	movs	r1, #4
- 80017e4:	4869      	ldr	r0, [pc, #420]	@ (800198c <main+0x2dc>)
- 80017e6:	f005 f8dd 	bl	80069a4 <HAL_TIM_PWM_Start>
+ 80017e0:	2104      	movs	r1, #4
+ 80017e2:	4869      	ldr	r0, [pc, #420]	@ (8001988 <main+0x2d8>)
+ 80017e4:	f005 f8de 	bl	80069a4 <HAL_TIM_PWM_Start>
 
   /* Pots: calibrate ADC1 once, then bind POT1..POT6 to their channels. */
   HAL_ADCEx_Calibration_Start(&hadc1);
- 80017ea:	486f      	ldr	r0, [pc, #444]	@ (80019a8 <main+0x2f8>)
- 80017ec:	f002 fe00 	bl	80043f0 <HAL_ADCEx_Calibration_Start>
+ 80017e8:	486f      	ldr	r0, [pc, #444]	@ (80019a8 <main+0x2f8>)
+ 80017ea:	f002 fe01 	bl	80043f0 <HAL_ADCEx_Calibration_Start>
     ADC_CHANNEL_10,  /* POT3  PC0 */
     ADC_CHANNEL_1,   /* POT4  PA1 */
     ADC_CHANNEL_12,  /* POT5  PC2 */
     ADC_CHANNEL_11,  /* POT6  PC1 */
   };
   for (int i = 0; i < 6; i++)
- 80017f0:	2300      	movs	r3, #0
- 80017f2:	677b      	str	r3, [r7, #116]	@ 0x74
- 80017f4:	e011      	b.n	800181a <main+0x16a>
+ 80017ee:	2300      	movs	r3, #0
+ 80017f0:	677b      	str	r3, [r7, #116]	@ 0x74
+ 80017f2:	e011      	b.n	8001818 <main+0x168>
     pot_init(&pots[i], &hadc1, pot_channels[i]);
- 80017f6:	6f7a      	ldr	r2, [r7, #116]	@ 0x74
- 80017f8:	4613      	mov	r3, r2
- 80017fa:	009b      	lsls	r3, r3, #2
- 80017fc:	4413      	add	r3, r2
- 80017fe:	009b      	lsls	r3, r3, #2
- 8001800:	4a6a      	ldr	r2, [pc, #424]	@ (80019ac <main+0x2fc>)
- 8001802:	1898      	adds	r0, r3, r2
- 8001804:	4a6a      	ldr	r2, [pc, #424]	@ (80019b0 <main+0x300>)
- 8001806:	6f7b      	ldr	r3, [r7, #116]	@ 0x74
- 8001808:	f852 3023 	ldr.w	r3, [r2, r3, lsl #2]
- 800180c:	461a      	mov	r2, r3
- 800180e:	4966      	ldr	r1, [pc, #408]	@ (80019a8 <main+0x2f8>)
- 8001810:	f001 f83a 	bl	8002888 <pot_init>
+ 80017f4:	6f7a      	ldr	r2, [r7, #116]	@ 0x74
+ 80017f6:	4613      	mov	r3, r2
+ 80017f8:	009b      	lsls	r3, r3, #2
+ 80017fa:	4413      	add	r3, r2
+ 80017fc:	009b      	lsls	r3, r3, #2
+ 80017fe:	4a6b      	ldr	r2, [pc, #428]	@ (80019ac <main+0x2fc>)
+ 8001800:	1898      	adds	r0, r3, r2
+ 8001802:	4a6b      	ldr	r2, [pc, #428]	@ (80019b0 <main+0x300>)
+ 8001804:	6f7b      	ldr	r3, [r7, #116]	@ 0x74
+ 8001806:	f852 3023 	ldr.w	r3, [r2, r3, lsl #2]
+ 800180a:	461a      	mov	r2, r3
+ 800180c:	4966      	ldr	r1, [pc, #408]	@ (80019a8 <main+0x2f8>)
+ 800180e:	f001 f83b 	bl	8002888 <pot_init>
   for (int i = 0; i < 6; i++)
- 8001814:	6f7b      	ldr	r3, [r7, #116]	@ 0x74
- 8001816:	3301      	adds	r3, #1
- 8001818:	677b      	str	r3, [r7, #116]	@ 0x74
- 800181a:	6f7b      	ldr	r3, [r7, #116]	@ 0x74
- 800181c:	2b05      	cmp	r3, #5
- 800181e:	ddea      	ble.n	80017f6 <main+0x146>
+ 8001812:	6f7b      	ldr	r3, [r7, #116]	@ 0x74
+ 8001814:	3301      	adds	r3, #1
+ 8001816:	677b      	str	r3, [r7, #116]	@ 0x74
+ 8001818:	6f7b      	ldr	r3, [r7, #116]	@ 0x74
+ 800181a:	2b05      	cmp	r3, #5
+ 800181c:	ddea      	ble.n	80017f4 <main+0x144>
 
   /* Footswitches. active_low = switch-to-ground + external pull-up. SW_1 is the
    * bypass footswitch; SW_2 still toggles LED2. */
   fsw_init(&sw1, SW_1_GPIO_Port, SW_1_Pin, true);
- 8001820:	2301      	movs	r3, #1
- 8001822:	2220      	movs	r2, #32
- 8001824:	4963      	ldr	r1, [pc, #396]	@ (80019b4 <main+0x304>)
- 8001826:	4864      	ldr	r0, [pc, #400]	@ (80019b8 <main+0x308>)
- 8001828:	f7ff fae2 	bl	8000df0 <fsw_init>
+ 800181e:	2301      	movs	r3, #1
+ 8001820:	2220      	movs	r2, #32
+ 8001822:	4964      	ldr	r1, [pc, #400]	@ (80019b4 <main+0x304>)
+ 8001824:	4864      	ldr	r0, [pc, #400]	@ (80019b8 <main+0x308>)
+ 8001826:	f7ff fae3 	bl	8000df0 <fsw_init>
   fsw_init(&sw2, SW_2_GPIO_Port, SW_2_Pin, true);
- 800182c:	2301      	movs	r3, #1
- 800182e:	2210      	movs	r2, #16
- 8001830:	4960      	ldr	r1, [pc, #384]	@ (80019b4 <main+0x304>)
- 8001832:	4862      	ldr	r0, [pc, #392]	@ (80019bc <main+0x30c>)
- 8001834:	f7ff fadc 	bl	8000df0 <fsw_init>
+ 800182a:	2301      	movs	r3, #1
+ 800182c:	2210      	movs	r2, #16
+ 800182e:	4961      	ldr	r1, [pc, #388]	@ (80019b4 <main+0x304>)
+ 8001830:	4862      	ldr	r0, [pc, #392]	@ (80019bc <main+0x30c>)
+ 8001832:	f7ff fadd 	bl	8000df0 <fsw_init>
 
   preset_init(&preset_state);   /* SW_2 preset state machine (boots LIVE, LED2 off) */
- 8001838:	4861      	ldr	r0, [pc, #388]	@ (80019c0 <main+0x310>)
- 800183a:	f001 f955 	bl	8002ae8 <preset_init>
+ 8001836:	4862      	ldr	r0, [pc, #392]	@ (80019c0 <main+0x310>)
+ 8001838:	f001 f956 	bl	8002ae8 <preset_init>
    * Later: staging area for PK-Bootloader firmware images (bottom of the array;
    * see Flash_Profile.md). w25q_init wakes the part and reads the JEDEC ID; if
    * it doesn't answer (flash.present == false) save/load no-op and the unit just
    * runs RAM-only, so a missing/dead chip never bricks boot.
    * SPI2 is already up (MX_SPI2_Init, full-duplex Mode 0 @2.25 MHz). */
   w25q_init(&flash, &hspi2, SPI2_CS_GPIO_Port, SPI2_CS_Pin);
- 800183e:	f44f 5380 	mov.w	r3, #4096	@ 0x1000
- 8001842:	4a60      	ldr	r2, [pc, #384]	@ (80019c4 <main+0x314>)
- 8001844:	4960      	ldr	r1, [pc, #384]	@ (80019c8 <main+0x318>)
- 8001846:	4861      	ldr	r0, [pc, #388]	@ (80019cc <main+0x31c>)
- 8001848:	f001 ffc7 	bl	80037da <w25q_init>
+ 800183c:	f44f 5380 	mov.w	r3, #4096	@ 0x1000
+ 8001840:	4a60      	ldr	r2, [pc, #384]	@ (80019c4 <main+0x314>)
+ 8001842:	4961      	ldr	r1, [pc, #388]	@ (80019c8 <main+0x318>)
+ 8001844:	4861      	ldr	r0, [pc, #388]	@ (80019cc <main+0x31c>)
+ 8001846:	f001 ffc8 	bl	80037da <w25q_init>
   preset_store_load(&flash, &preset_state);   /* loads snapshot if a valid one exists */
- 800184c:	495c      	ldr	r1, [pc, #368]	@ (80019c0 <main+0x310>)
- 800184e:	485f      	ldr	r0, [pc, #380]	@ (80019cc <main+0x31c>)
- 8001850:	f001 fb72 	bl	8002f38 <preset_store_load>
+ 800184a:	495d      	ldr	r1, [pc, #372]	@ (80019c0 <main+0x310>)
+ 800184c:	485f      	ldr	r0, [pc, #380]	@ (80019cc <main+0x31c>)
+ 800184e:	f001 fb73 	bl	8002f38 <preset_store_load>
 
   /* Boot bypassed: drive PA15 low (matches CubeMX reset level + bypass_on). */
   HAL_GPIO_WritePin(JFET_BYPASS_GPIO_Port, JFET_BYPASS_Pin, GPIO_PIN_RESET);
- 8001854:	2200      	movs	r2, #0
- 8001856:	f44f 4100 	mov.w	r1, #32768	@ 0x8000
- 800185a:	4856      	ldr	r0, [pc, #344]	@ (80019b4 <main+0x304>)
- 800185c:	f003 f91f 	bl	8004a9e <HAL_GPIO_WritePin>
+ 8001852:	2200      	movs	r2, #0
+ 8001854:	f44f 4100 	mov.w	r1, #32768	@ 0x8000
+ 8001858:	4856      	ldr	r0, [pc, #344]	@ (80019b4 <main+0x304>)
+ 800185a:	f003 f920 	bl	8004a9e <HAL_GPIO_WritePin>
    * Rails are ASYMMETRIC (~-4.35 / +5.0 V); mid-scale (code 63) is the rail
    * center ~+0.28 V, NOT 0 V — gating is referenced from code 63. POT6 drives
    * the bias in the loop from center (code 63, no gating) up to the positive
    * rail (code 127), C-tapered. Re-measure voltages post orientation-fix.
    * See Bias_Profile.md. */
   mcp41hv_init(&bias, &hspi3, DPOT_CS_GPIO_Port, DPOT_CS_Pin);
- 8001860:	f44f 6300 	mov.w	r3, #2048	@ 0x800
- 8001864:	4a5a      	ldr	r2, [pc, #360]	@ (80019d0 <main+0x320>)
- 8001866:	495b      	ldr	r1, [pc, #364]	@ (80019d4 <main+0x324>)
- 8001868:	485b      	ldr	r0, [pc, #364]	@ (80019d8 <main+0x328>)
- 800186a:	f7ff fa54 	bl	8000d16 <mcp41hv_init>
+ 800185e:	f44f 6300 	mov.w	r3, #2048	@ 0x800
+ 8001862:	4a5b      	ldr	r2, [pc, #364]	@ (80019d0 <main+0x320>)
+ 8001864:	495b      	ldr	r1, [pc, #364]	@ (80019d4 <main+0x324>)
+ 8001866:	485c      	ldr	r0, [pc, #368]	@ (80019d8 <main+0x328>)
+ 8001868:	f7ff fa55 	bl	8000d16 <mcp41hv_init>
   mcp41hv_set_code(&bias, MCP41HV_CODE_MID);   /* boot center; POT6 takes over in the loop */
- 800186e:	213f      	movs	r1, #63	@ 0x3f
- 8001870:	4859      	ldr	r0, [pc, #356]	@ (80019d8 <main+0x328>)
- 8001872:	f7ff fa9f 	bl	8000db4 <mcp41hv_set_code>
+ 800186c:	213f      	movs	r1, #63	@ 0x3f
+ 800186e:	485a      	ldr	r0, [pc, #360]	@ (80019d8 <main+0x328>)
+ 8001870:	f7ff faa0 	bl	8000db4 <mcp41hv_set_code>
    * USART1's NVIC line is enabled here in code (NOT in CubeMX), so the
    * USART1_IRQHandler in stm32f1xx_it.c lives in a USER CODE block and survives
    * regen with no collision. We enable the NVIC line + the RXNE interrupt bit.
    * (Future option: let CubeMX manage the vector — see the note on the handler
    * in stm32f1xx_it.c.) */
   midi_init();
- 8001876:	f000 fe3b 	bl	80024f0 <midi_init>
+ 8001874:	f000 fe3c 	bl	80024f0 <midi_init>
   midi_set_cc_handler(on_midi_cc);
- 800187a:	4858      	ldr	r0, [pc, #352]	@ (80019dc <main+0x32c>)
- 800187c:	f000 fe98 	bl	80025b0 <midi_set_cc_handler>
+ 8001878:	4858      	ldr	r0, [pc, #352]	@ (80019dc <main+0x32c>)
+ 800187a:	f000 fe99 	bl	80025b0 <midi_set_cc_handler>
   HAL_NVIC_SetPriority(USART1_IRQn, 6, 0);
- 8001880:	2200      	movs	r2, #0
- 8001882:	2106      	movs	r1, #6
- 8001884:	2025      	movs	r0, #37	@ 0x25
- 8001886:	f002 ff38 	bl	80046fa <HAL_NVIC_SetPriority>
+ 800187e:	2200      	movs	r2, #0
+ 8001880:	2106      	movs	r1, #6
+ 8001882:	2025      	movs	r0, #37	@ 0x25
+ 8001884:	f002 ff39 	bl	80046fa <HAL_NVIC_SetPriority>
   HAL_NVIC_EnableIRQ(USART1_IRQn);
- 800188a:	2025      	movs	r0, #37	@ 0x25
- 800188c:	f002 ff51 	bl	8004732 <HAL_NVIC_EnableIRQ>
+ 8001888:	2025      	movs	r0, #37	@ 0x25
+ 800188a:	f002 ff52 	bl	8004732 <HAL_NVIC_EnableIRQ>
   __HAL_UART_ENABLE_IT(&huart1, UART_IT_RXNE);
- 8001890:	4b53      	ldr	r3, [pc, #332]	@ (80019e0 <main+0x330>)
- 8001892:	681b      	ldr	r3, [r3, #0]
- 8001894:	68da      	ldr	r2, [r3, #12]
- 8001896:	4b52      	ldr	r3, [pc, #328]	@ (80019e0 <main+0x330>)
- 8001898:	681b      	ldr	r3, [r3, #0]
- 800189a:	f042 0220 	orr.w	r2, r2, #32
- 800189e:	60da      	str	r2, [r3, #12]
+ 800188e:	4b54      	ldr	r3, [pc, #336]	@ (80019e0 <main+0x330>)
+ 8001890:	681b      	ldr	r3, [r3, #0]
+ 8001892:	68da      	ldr	r2, [r3, #12]
+ 8001894:	4b52      	ldr	r3, [pc, #328]	@ (80019e0 <main+0x330>)
+ 8001896:	681b      	ldr	r3, [r3, #0]
+ 8001898:	f042 0220 	orr.w	r2, r2, #32
+ 800189c:	60da      	str	r2, [r3, #12]
   /* Start the TIM7 control-smoothing ISR. From here on the loop sets cv_target[]
    * / bias_target and the ISR drives the actual VCA/bias outputs. Targets boot
    * at 0 / code 63 (matches the cvout/bias boot state above) so nothing jumps;
    * the first 100 Hz pass fills in the real knob positions and the ISR ramps to
    * them over a few ms. */
   ctrl_smooth_start();
- 80018a0:	f7ff fece 	bl	8001640 <ctrl_smooth_start>
+ 800189e:	f7ff fecf 	bl	8001640 <ctrl_smooth_start>
   {
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
     static uint32_t last_pot_ms = 0;
     uint32_t now = HAL_GetTick();
- 80018a4:	f002 f91e 	bl	8003ae4 <HAL_GetTick>
- 80018a8:	6578      	str	r0, [r7, #84]	@ 0x54
+ 80018a2:	f002 f91f 	bl	8003ae4 <HAL_GetTick>
+ 80018a6:	6578      	str	r0, [r7, #84]	@ 0x54
 
     /* Drain + dispatch any MIDI bytes the USART1 RX ISR has queued. Runs every
      * iteration (cheap when idle) so CCs are applied promptly. */
     midi_poll();
- 80018aa:	f000 ffc3 	bl	8002834 <midi_poll>
+ 80018a8:	f000 ffc4 	bl	8002834 <midi_poll>
 
     /* Poll all 6 pots at 100 Hz. Read pots[i].value (0..1) anywhere. */
     if (now - last_pot_ms >= 10) {
- 80018ae:	4b4d      	ldr	r3, [pc, #308]	@ (80019e4 <main+0x334>)
- 80018b0:	681b      	ldr	r3, [r3, #0]
- 80018b2:	6d7a      	ldr	r2, [r7, #84]	@ 0x54
- 80018b4:	1ad3      	subs	r3, r2, r3
- 80018b6:	2b09      	cmp	r3, #9
- 80018b8:	d9f4      	bls.n	80018a4 <main+0x1f4>
+ 80018ac:	4b4d      	ldr	r3, [pc, #308]	@ (80019e4 <main+0x334>)
+ 80018ae:	681b      	ldr	r3, [r3, #0]
+ 80018b0:	6d7a      	ldr	r2, [r7, #84]	@ 0x54
+ 80018b2:	1ad3      	subs	r3, r2, r3
+ 80018b4:	2b09      	cmp	r3, #9
+ 80018b6:	d9f4      	bls.n	80018a2 <main+0x1f2>
       float dt_ms = (float)(now - last_pot_ms);   /* ~10 ms; drives preset timing */
- 80018ba:	4b4a      	ldr	r3, [pc, #296]	@ (80019e4 <main+0x334>)
- 80018bc:	681b      	ldr	r3, [r3, #0]
- 80018be:	6d7a      	ldr	r2, [r7, #84]	@ 0x54
- 80018c0:	1ad3      	subs	r3, r2, r3
- 80018c2:	4618      	mov	r0, r3
- 80018c4:	f7fe fd64 	bl	8000390 <__aeabi_ui2f>
- 80018c8:	4603      	mov	r3, r0
- 80018ca:	653b      	str	r3, [r7, #80]	@ 0x50
+ 80018b8:	4b4a      	ldr	r3, [pc, #296]	@ (80019e4 <main+0x334>)
+ 80018ba:	681b      	ldr	r3, [r3, #0]
+ 80018bc:	6d7a      	ldr	r2, [r7, #84]	@ 0x54
+ 80018be:	1ad3      	subs	r3, r2, r3
+ 80018c0:	4618      	mov	r0, r3
+ 80018c2:	f7fe fd65 	bl	8000390 <__aeabi_ui2f>
+ 80018c6:	4603      	mov	r3, r0
+ 80018c8:	653b      	str	r3, [r7, #80]	@ 0x50
       last_pot_ms = now;
- 80018cc:	4a45      	ldr	r2, [pc, #276]	@ (80019e4 <main+0x334>)
- 80018ce:	6d7b      	ldr	r3, [r7, #84]	@ 0x54
- 80018d0:	6013      	str	r3, [r2, #0]
+ 80018ca:	4a46      	ldr	r2, [pc, #280]	@ (80019e4 <main+0x334>)
+ 80018cc:	6d7b      	ldr	r3, [r7, #84]	@ 0x54
+ 80018ce:	6013      	str	r3, [r2, #0]
       for (int i = 0; i < 6; i++)
- 80018d2:	2300      	movs	r3, #0
- 80018d4:	673b      	str	r3, [r7, #112]	@ 0x70
- 80018d6:	e00c      	b.n	80018f2 <main+0x242>
+ 80018d0:	2300      	movs	r3, #0
+ 80018d2:	673b      	str	r3, [r7, #112]	@ 0x70
+ 80018d4:	e00c      	b.n	80018f0 <main+0x240>
         pot_poll(&pots[i]);
- 80018d8:	6f3a      	ldr	r2, [r7, #112]	@ 0x70
- 80018da:	4613      	mov	r3, r2
- 80018dc:	009b      	lsls	r3, r3, #2
- 80018de:	4413      	add	r3, r2
- 80018e0:	009b      	lsls	r3, r3, #2
- 80018e2:	4a32      	ldr	r2, [pc, #200]	@ (80019ac <main+0x2fc>)
- 80018e4:	4413      	add	r3, r2
- 80018e6:	4618      	mov	r0, r3
- 80018e8:	f001 f86c 	bl	80029c4 <pot_poll>
+ 80018d6:	6f3a      	ldr	r2, [r7, #112]	@ 0x70
+ 80018d8:	4613      	mov	r3, r2
+ 80018da:	009b      	lsls	r3, r3, #2
+ 80018dc:	4413      	add	r3, r2
+ 80018de:	009b      	lsls	r3, r3, #2
+ 80018e0:	4a32      	ldr	r2, [pc, #200]	@ (80019ac <main+0x2fc>)
+ 80018e2:	4413      	add	r3, r2
+ 80018e4:	4618      	mov	r0, r3
+ 80018e6:	f001 f86d 	bl	80029c4 <pot_poll>
       for (int i = 0; i < 6; i++)
- 80018ec:	6f3b      	ldr	r3, [r7, #112]	@ 0x70
- 80018ee:	3301      	adds	r3, #1
- 80018f0:	673b      	str	r3, [r7, #112]	@ 0x70
- 80018f2:	6f3b      	ldr	r3, [r7, #112]	@ 0x70
- 80018f4:	2b05      	cmp	r3, #5
- 80018f6:	ddef      	ble.n	80018d8 <main+0x228>
+ 80018ea:	6f3b      	ldr	r3, [r7, #112]	@ 0x70
+ 80018ec:	3301      	adds	r3, #1
+ 80018ee:	673b      	str	r3, [r7, #112]	@ 0x70
+ 80018f0:	6f3b      	ldr	r3, [r7, #112]	@ 0x70
+ 80018f2:	2b05      	cmp	r3, #5
+ 80018f4:	ddef      	ble.n	80018d6 <main+0x226>
 
       fsw_poll(&sw1, now);
- 80018f8:	6d79      	ldr	r1, [r7, #84]	@ 0x54
- 80018fa:	482f      	ldr	r0, [pc, #188]	@ (80019b8 <main+0x308>)
- 80018fc:	f7ff faa0 	bl	8000e40 <fsw_poll>
+ 80018f6:	6d79      	ldr	r1, [r7, #84]	@ 0x54
+ 80018f8:	482f      	ldr	r0, [pc, #188]	@ (80019b8 <main+0x308>)
+ 80018fa:	f7ff faa1 	bl	8000e40 <fsw_poll>
       fsw_poll(&sw2, now);
- 8001900:	6d79      	ldr	r1, [r7, #84]	@ 0x54
- 8001902:	482e      	ldr	r0, [pc, #184]	@ (80019bc <main+0x30c>)
- 8001904:	f7ff fa9c 	bl	8000e40 <fsw_poll>
+ 80018fe:	6d79      	ldr	r1, [r7, #84]	@ 0x54
+ 8001900:	482e      	ldr	r0, [pc, #184]	@ (80019bc <main+0x30c>)
+ 8001902:	f7ff fa9d 	bl	8000e40 <fsw_poll>
 
       /* Resolve each pot's effective value: physical knob unless a MIDI CC has
        * taken it over (last-mover-wins). eff[0..5] line up with POT1..POT6. */
       float eff[6];
       for (int i = 0; i < 6; i++)
- 8001908:	2300      	movs	r3, #0
- 800190a:	66fb      	str	r3, [r7, #108]	@ 0x6c
- 800190c:	e02b      	b.n	8001966 <main+0x2b6>
+ 8001906:	2300      	movs	r3, #0
+ 8001908:	66fb      	str	r3, [r7, #108]	@ 0x6c
+ 800190a:	e02b      	b.n	8001964 <main+0x2b4>
         eff[i] = midi_apply(pots[i].value, midi_rx[i], midi_val[i],
- 800190e:	4927      	ldr	r1, [pc, #156]	@ (80019ac <main+0x2fc>)
- 8001910:	6efa      	ldr	r2, [r7, #108]	@ 0x6c
- 8001912:	4613      	mov	r3, r2
- 8001914:	009b      	lsls	r3, r3, #2
- 8001916:	4413      	add	r3, r2
- 8001918:	009b      	lsls	r3, r3, #2
- 800191a:	440b      	add	r3, r1
- 800191c:	3310      	adds	r3, #16
- 800191e:	6818      	ldr	r0, [r3, #0]
- 8001920:	4a31      	ldr	r2, [pc, #196]	@ (80019e8 <main+0x338>)
- 8001922:	6efb      	ldr	r3, [r7, #108]	@ 0x6c
- 8001924:	4413      	add	r3, r2
- 8001926:	7819      	ldrb	r1, [r3, #0]
- 8001928:	4a30      	ldr	r2, [pc, #192]	@ (80019ec <main+0x33c>)
- 800192a:	6efb      	ldr	r3, [r7, #108]	@ 0x6c
- 800192c:	f852 4023 	ldr.w	r4, [r2, r3, lsl #2]
- 8001930:	6efb      	ldr	r3, [r7, #108]	@ 0x6c
- 8001932:	009b      	lsls	r3, r3, #2
- 8001934:	4a2e      	ldr	r2, [pc, #184]	@ (80019f0 <main+0x340>)
- 8001936:	189d      	adds	r5, r3, r2
- 8001938:	6efb      	ldr	r3, [r7, #108]	@ 0x6c
- 800193a:	009b      	lsls	r3, r3, #2
- 800193c:	4a2d      	ldr	r2, [pc, #180]	@ (80019f4 <main+0x344>)
- 800193e:	4413      	add	r3, r2
- 8001940:	6efa      	ldr	r2, [r7, #108]	@ 0x6c
- 8001942:	4e2d      	ldr	r6, [pc, #180]	@ (80019f8 <main+0x348>)
- 8001944:	4432      	add	r2, r6
- 8001946:	9201      	str	r2, [sp, #4]
- 8001948:	9300      	str	r3, [sp, #0]
- 800194a:	462b      	mov	r3, r5
- 800194c:	4622      	mov	r2, r4
- 800194e:	f7ff fd13 	bl	8001378 <midi_apply>
- 8001952:	4602      	mov	r2, r0
- 8001954:	6efb      	ldr	r3, [r7, #108]	@ 0x6c
- 8001956:	009b      	lsls	r3, r3, #2
- 8001958:	3378      	adds	r3, #120	@ 0x78
- 800195a:	443b      	add	r3, r7
- 800195c:	f843 2c54 	str.w	r2, [r3, #-84]
+ 800190c:	4927      	ldr	r1, [pc, #156]	@ (80019ac <main+0x2fc>)
+ 800190e:	6efa      	ldr	r2, [r7, #108]	@ 0x6c
+ 8001910:	4613      	mov	r3, r2
+ 8001912:	009b      	lsls	r3, r3, #2
+ 8001914:	4413      	add	r3, r2
+ 8001916:	009b      	lsls	r3, r3, #2
+ 8001918:	440b      	add	r3, r1
+ 800191a:	3310      	adds	r3, #16
+ 800191c:	6818      	ldr	r0, [r3, #0]
+ 800191e:	4a32      	ldr	r2, [pc, #200]	@ (80019e8 <main+0x338>)
+ 8001920:	6efb      	ldr	r3, [r7, #108]	@ 0x6c
+ 8001922:	4413      	add	r3, r2
+ 8001924:	7819      	ldrb	r1, [r3, #0]
+ 8001926:	4a31      	ldr	r2, [pc, #196]	@ (80019ec <main+0x33c>)
+ 8001928:	6efb      	ldr	r3, [r7, #108]	@ 0x6c
+ 800192a:	f852 4023 	ldr.w	r4, [r2, r3, lsl #2]
+ 800192e:	6efb      	ldr	r3, [r7, #108]	@ 0x6c
+ 8001930:	009b      	lsls	r3, r3, #2
+ 8001932:	4a2f      	ldr	r2, [pc, #188]	@ (80019f0 <main+0x340>)
+ 8001934:	189d      	adds	r5, r3, r2
+ 8001936:	6efb      	ldr	r3, [r7, #108]	@ 0x6c
+ 8001938:	009b      	lsls	r3, r3, #2
+ 800193a:	4a2e      	ldr	r2, [pc, #184]	@ (80019f4 <main+0x344>)
+ 800193c:	4413      	add	r3, r2
+ 800193e:	6efa      	ldr	r2, [r7, #108]	@ 0x6c
+ 8001940:	4e2d      	ldr	r6, [pc, #180]	@ (80019f8 <main+0x348>)
+ 8001942:	4432      	add	r2, r6
+ 8001944:	9201      	str	r2, [sp, #4]
+ 8001946:	9300      	str	r3, [sp, #0]
+ 8001948:	462b      	mov	r3, r5
+ 800194a:	4622      	mov	r2, r4
+ 800194c:	f7ff fd14 	bl	8001378 <midi_apply>
+ 8001950:	4602      	mov	r2, r0
+ 8001952:	6efb      	ldr	r3, [r7, #108]	@ 0x6c
+ 8001954:	009b      	lsls	r3, r3, #2
+ 8001956:	3378      	adds	r3, #120	@ 0x78
+ 8001958:	443b      	add	r3, r7
+ 800195a:	f843 2c54 	str.w	r2, [r3, #-84]
       for (int i = 0; i < 6; i++)
- 8001960:	6efb      	ldr	r3, [r7, #108]	@ 0x6c
- 8001962:	3301      	adds	r3, #1
- 8001964:	66fb      	str	r3, [r7, #108]	@ 0x6c
- 8001966:	6efb      	ldr	r3, [r7, #108]	@ 0x6c
- 8001968:	2b05      	cmp	r3, #5
- 800196a:	ddd0      	ble.n	800190e <main+0x25e>
+ 800195e:	6efb      	ldr	r3, [r7, #108]	@ 0x6c
+ 8001960:	3301      	adds	r3, #1
+ 8001962:	66fb      	str	r3, [r7, #108]	@ 0x6c
+ 8001964:	6efb      	ldr	r3, [r7, #108]	@ 0x6c
+ 8001966:	2b05      	cmp	r3, #5
+ 8001968:	ddd0      	ble.n	800190c <main+0x25c>
                             &last_knob[i], &last_midi[i], &using_midi[i]);
 
       /* Feed the resolved values to the preset layer (updates the match cue and,
        * on commit, is what gets snapshotted). Always non-blocking. */
       for (int i = 0; i < 6; i++)
- 800196c:	2300      	movs	r3, #0
- 800196e:	66bb      	str	r3, [r7, #104]	@ 0x68
- 8001970:	e052      	b.n	8001a18 <main+0x368>
- 8001972:	bf00      	nop
- 8001974:	40021000 	.word	0x40021000
- 8001978:	40010000 	.word	0x40010000
- 800197c:	200001b0 	.word	0x200001b0
- 8001980:	200007ac 	.word	0x200007ac
- 8001984:	20000168 	.word	0x20000168
- 8001988:	20000764 	.word	0x20000764
- 800198c:	200001f8 	.word	0x200001f8
- 8001990:	3f0e147b 	.word	0x3f0e147b
- 8001994:	20000900 	.word	0x20000900
- 8001998:	20000910 	.word	0x20000910
- 800199c:	20000920 	.word	0x20000920
- 80019a0:	20000940 	.word	0x20000940
+ 800196a:	2300      	movs	r3, #0
+ 800196c:	66bb      	str	r3, [r7, #104]	@ 0x68
+ 800196e:	e053      	b.n	8001a18 <main+0x368>
+ 8001970:	40021000 	.word	0x40021000
+ 8001974:	40010000 	.word	0x40010000
+ 8001978:	200001b0 	.word	0x200001b0
+ 800197c:	200007ac 	.word	0x200007ac
+ 8001980:	20000168 	.word	0x20000168
+ 8001984:	20000764 	.word	0x20000764
+ 8001988:	200001f8 	.word	0x200001f8
+ 800198c:	3f0e147b 	.word	0x3f0e147b
+ 8001990:	20000900 	.word	0x20000900
+ 8001994:	20000910 	.word	0x20000910
+ 8001998:	20000920 	.word	0x20000920
+ 800199c:	20000940 	.word	0x20000940
+ 80019a0:	3f2e147b 	.word	0x3f2e147b
  80019a4:	20000930 	.word	0x20000930
  80019a8:	20000088 	.word	0x20000088
  80019ac:	200007f4 	.word	0x200007f4
@@ -3550,13 +3555,13 @@ int main(void)
  8001d5a:	68bb      	ldr	r3, [r7, #8]
  8001d5c:	480b      	ldr	r0, [pc, #44]	@ (8001d8c <main+0x6dc>)
  8001d5e:	f7ff fa8d 	bl	800127c <ledrgb_set>
- 8001d62:	e59f      	b.n	80018a4 <main+0x1f4>
+ 8001d62:	e59e      	b.n	80018a2 <main+0x1f2>
       } else {
         ledrgb_off(&led2);
  8001d64:	4809      	ldr	r0, [pc, #36]	@ (8001d8c <main+0x6dc>)
  8001d66:	f7ff fab5 	bl	80012d4 <ledrgb_off>
   {
- 8001d6a:	e59b      	b.n	80018a4 <main+0x1f4>
+ 8001d6a:	e59a      	b.n	80018a2 <main+0x1f2>
  8001d6c:	200009a4 	.word	0x200009a4
  8001d70:	c0900000 	.word	0xc0900000
  8001d74:	3f7d27f6 	.word	0x3f7d27f6
