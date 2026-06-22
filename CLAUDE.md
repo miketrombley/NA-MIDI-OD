@@ -96,8 +96,11 @@ PK-Bootloader later. Full detail in `Flash_Profile.md`; the load-bearing bits:
   commit. LED2 = preset status (off / red / white match-flash / breathing white).
   Single RAM-only snapshot — see `Preset_Profile.md`.
 - POT1–POT5 → the 5 SSI2160 VCAs (HPF/LPF/LPF/VOLUME/GAIN) — see `VCA_Profiles.md`.
-- POT6 → bias DPOT: center (code 63, no gating) → positive rail (code 127), C taper
-  (`BIAS_TAPER_K` = 4.5). See `Bias_Profile.md`.
+- POT6 → bias DPOT: C taper (`BIAS_TAPER_K` = 2.5) over the useful window code 98
+  (~+2.8 V) → 111 (~+3.7 V). Bias only moves the sound in ~2.8–3.7 V; outside that
+  the knob did nothing, so POT6 sweeps just that band. (POT6 min is no longer the
+  no-gating center; linear sweep parked in `main.c` as a swap-in.) See
+  `Bias_Profile.md`.
 - **MIDI in** (CC 20–25 → POT1–POT6 targets) coexists with the physical pots via
   last-mover-wins hysteresis; CC29/FS1 → bypass, FS2 → preset recall toggle (no
   momentary-CC analogue for hold-to-save). See `MIDI.md`.

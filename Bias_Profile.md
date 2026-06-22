@@ -89,26 +89,40 @@ pot mapping below.
 
 ### POT6 → bias (current)
 
-POT6 sweeps from **rail center (no gating) up to the positive rail**, with a
-**C taper** (anti-log) so the bias moves fast off center then fine-tunes near
-the top:
+POT6 sweeps the **useful bias window 2.8 → 3.7 V**, with a **C taper** (anti-log)
+so the bias moves fast off the bottom then fine-tunes near the top:
 
 ```
-POT6 min (0.0) -> BIAS_CODE_MIN = code 63  -> rail center (~+0.28 V, no gating)
-POT6 max (1.0) -> BIAS_CODE_MAX = code 127 -> V_A (full positive rail)
+POT6 min (0.0) -> BIAS_CODE_MIN = code 98  -> ~+2.8 V
+POT6 max (1.0) -> BIAS_CODE_MAX = code 111 -> ~+3.7 V
 
-curve(x) = (1 − e^(−k·x)) / (1 − e^(−k))          k = BIAS_TAPER_K = 4.5
-code     = round(63 + curve(pot6) · (127 − 63))
+curve(x) = (1 − e^(−k·x)) / (1 − e^(−k))          k = BIAS_TAPER_K = 2.5
+code     = round(98 + curve(pot6) · (111 − 98))
 ```
+
+> **Restricted to the 2.8–3.7 V window (changed 2026-06-21).** Bench: the bias
+> only changes the sound musically within ~2.8–3.7 V — below 2.8 V and above
+> 3.7 V the knob moved nothing. So POT6 now sweeps just that band, to put the
+> whole rotation where it matters. Codes from the measured endpoints (code 63 =
+> 0.287 V, code 127 = 4.844 V, linear in code):
+> `code(V) = 63 + (V − 0.287)·(127−63)/(4.844−0.287)` → `code(2.8) ≈ 98`,
+> `code(3.7) ≈ 111`. Widen `BIAS_CODE_MIN`/`MAX` if the useful window changes.
+>
+> ⚠️ POT6 min is **no longer the no-gating center** (code 63) — it now sits at
+> ~+2.8 V (code 98), so the pedal is gated across the whole POT6 sweep. (Boot
+> still writes `MCP41HV_CODE_MID` = 63, then the ISR glides up to code 98.)
 
 `curve()` is the C/anti-log taper: concave-down, `curve(0)=0`, `curve(1)=1`,
-rising fast at the bottom and flattening at the top (bigger `k` = more
-aggressive front end). Defined in `main.c` (`USER CODE BEGIN PD`) as
-`BIAS_CODE_MIN` / `BIAS_CODE_MAX` / `BIAS_TAPER_K`, driven each 100 Hz pot poll
-via `mcp41hv_set_code(&bias, ...)`. Boots at mid-scale (`MCP41HV_CODE_MID` = 63
-= POT6 min = center). To change the throw, set `BIAS_CODE_MIN`/`MAX` to the
-desired endpoint codes (`code = 127·(V − V_B)/(V_A − V_B)`); to change the
-curve aggressiveness, adjust `BIAS_TAPER_K` (use `→0` for ~linear).
+rising fast at the bottom and flattening at the top (bigger `k` = more aggressive
+front end). With only 13 codes across the throw and `k = 2.5`, it's a gentle
+front-load — close to linear, slightly fuller toward the bottom of rotation. A
+**linear** sweep (`bias_curve = ctl[5]`) is parked in `main.c` as a swap-in.
+`BIAS_CODE_MIN` / `BIAS_CODE_MAX` / `BIAS_TAPER_K` live in `main.c`
+(`USER CODE BEGIN PD`), driven each 100 Hz pot poll via `mcp41hv_set_code(&bias,
+...)`. Boots at mid-scale (`MCP41HV_CODE_MID` = 63), then glides to POT6's
+position. To change the throw, set `BIAS_CODE_MIN`/`MAX` to the desired endpoint
+codes (`code = 127·(V − V_B)/(V_A − V_B)`); to change the curve aggressiveness,
+adjust `BIAS_TAPER_K` (bigger = more aggressive front end; `→0` for ~linear).
 
 > **⚠️ Voltages need re-measuring.** Everything in §2/§3 (rails −4.35/+5.0, center
 > +0.28 V, tap 73.6 mV, etc.) was measured with the chip **mounted upside-down and

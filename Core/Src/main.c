@@ -41,15 +41,20 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-/* Bias DPOT range (POT6 min -> max). Center -> positive rail only, C taper
+/* Bias DPOT range (POT6 min -> max), C taper over the useful 2.8 .. 3.7 V window
  * (see Bias_Profile.md):
- *   POT6 min -> BIAS_CODE_MIN = code 63  = rail center (~+0.28 V, no gating)
- *   POT6 max -> BIAS_CODE_MAX = code 127 = V_A (full positive rail)              */
-#define BIAS_CODE_MIN   63     /* wiper at mid-scale = rail center (no gating)    */
-#define BIAS_CODE_MAX  127     /* wiper at A = full positive rail (V_A)           */
-/* C taper (anti-log): fast rise off center, fine resolution near the top.
+ *   POT6 min -> BIAS_CODE_MIN = code 98  = ~+2.8 V
+ *   POT6 max -> BIAS_CODE_MAX = code 111 = ~+3.7 V
+ * The bias only does something musical in this band, so POT6 sweeps just it.
+ * Codes from the measured endpoints (code 63 = 0.287 V, code 127 = 4.844 V,
+ * linear in code):
+ *   code(V) = 63 + (V - 0.287)*(127-63)/(4.844-0.287)
+ *   code(2.8 V) ~= 98 (2.78 V) ; code(3.7 V) ~= 111 (3.70 V)                    */
+#define BIAS_CODE_MIN   98     /* ~+2.8 V — bottom of the useful bias window      */
+#define BIAS_CODE_MAX  111     /* ~+3.7 V — top of the useful bias window         */
+/* C taper (anti-log): fast rise off the bottom, fine resolution near the top.
  * curve(x) = (1 - e^-k x) / (1 - e^-k); larger k = more aggressive front end.  */
-#define BIAS_TAPER_K   4.5f
+#define BIAS_TAPER_K   2.5f
 
 /* Volume taper (POT4): match a Tube Screamer Level pot's sweep. A TS Level is a
  * linear voltage divider, so its perceived taper is ~ -VOL_TS_DB_DECADE*log10(rot)
@@ -572,10 +577,12 @@ int main(void)
       cv_target[3] = bypass_on ? 0.0f : vol_curve;   /* POT4 -> VOLUME */
       cv_target[4] = ctl[4];   /* POT5 -> GAIN   */
 
-      /* POT6 -> bias: center (code 63, no gating) -> positive rail (code 127),
-       * with a C taper so the bias moves fast off center then fine-tunes near
-       * the top. Set the target code here; the ISR glides toward it one code at
-       * a time (change-detected SPI), so a fast twist ramps instead of lurching. */
+      /* POT6 -> bias: code 98 (~+2.8 V) -> 111 (~+3.7 V), with a C taper so the
+       * bias moves fast off the bottom then fine-tunes near the top. Set the
+       * target code here; the ISR glides toward it one code at a time
+       * (change-detected SPI), so a fast twist ramps instead of lurching.
+       * For a linear sweep instead, replace the two lines below with:
+       *   float bias_curve = ctl[5]; */
       float bias_curve = (1.0f - expf(-BIAS_TAPER_K * ctl[5]))
                        / (1.0f - expf(-BIAS_TAPER_K));
       bias_target = (int)lroundf(
