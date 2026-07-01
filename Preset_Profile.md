@@ -28,6 +28,9 @@ stores the real POT4/VOLUME setting, not the forced-mute 0 — expected/correct.
   750 ms, cancelled early if you leave the band).
 - **`PRESET_SAVE_ARMED`** — a save is pending; LED2 breathes **white** (1.5 s
   triangle). Controls stay live so you can dial in the sound before committing.
+  **Armed from a recalled preset, the recall hold-vs-takeover gate stays in
+  effect** — untouched pots keep their saved value through the breathe, so what
+  you hear is what will commit (see the commit note below).
 
 ## SW_2 gestures (PA4, debounced, active-low)
 Driven from the 100 Hz loop in `main.c` via the `Footswitch` wrapper
@@ -35,12 +38,23 @@ Driven from the 100 Hz loop in `main.c` via the `Footswitch` wrapper
 - **tap** (`< PRESET_HOLD_MS`) → `preset_recall_toggle()`:
   LIVE → recall (if a preset exists) → PRESET · PRESET → LIVE · SAVE_ARMED →
   cancel (restore the pre-arm mode).
-- **~1 s hold** (`PRESET_HOLD_MS = 1000`) → `preset_hold_fired()`:
-  LIVE/PRESET → arm (SAVE_ARMED, breathe) · SAVE_ARMED → **commit** the snapshot
-  → PRESET. Each press fires the hold once (`sw2_hold_fired`); to do the second
-  hold you release and press again. On the **commit** edge `main.c` also calls
-  `preset_store_save()` to write the snapshot to flash (the erase blocks the loop
-  briefly — see `Flash_Profile.md`). At boot, `preset_store_load()` reloads it.
+- **~1 s hold** (`PRESET_HOLD_MS = 1000`) → arm/commit:
+  LIVE/PRESET → arm (SAVE_ARMED, breathe) via `preset_hold_fired()` · SAVE_ARMED →
+  **commit** via `preset_commit()`. Each press fires the hold once
+  (`sw2_hold_fired`); to do the second hold you release and press again. On the
+  **commit** edge `main.c` also calls `preset_store_save()` to write the snapshot
+  to flash (the erase blocks the loop briefly — see `Flash_Profile.md`). At boot,
+  `preset_store_load()` reloads it.
+
+  **Commit stores the GATED panel, not the raw knobs.** `main.c` builds the
+  snapshot from the same gate that drives the audio: for a save armed from a
+  recalled preset, each pot contributes its **saved** value unless the knob moved
+  past `PRESET_MOVE_EPS` since recall, in which case it contributes the **live**
+  value. So editing one knob and saving yields "preset + that edit" (copy-then-
+  edit), never the whole physical panel. Armed from LIVE there's no gate, so the
+  snapshot is the full live panel — a fresh sound saves whole. (The legacy
+  `preset_hold_fired()` SAVE_ARMED branch — which snapshots raw `live[]` — is left
+  in place for API parity but is no longer the host's commit path.)
 
 **MIDI:** CC29 (`MIDI_CC_FS2`) press = `preset_recall_toggle()` (a tap). There is
 no momentary-CC analogue for hold-to-save, so MIDI only recalls/un-recalls.
@@ -51,10 +65,11 @@ knobs. It lives in `main.c` (the host owns the apply path), not in `preset.c`:
 
 - On **entry into PRESET mode** (recall or commit — detected via `preset_prev_mode`),
   every pot is re-armed: `pot_live[i] = false`, `pot_baseline[i] = eff[i]`.
-- Each 100 Hz pass, while in PRESET: a pot stays on its **saved** value
-  (`preset_value(i)`) until the physical knob travels past `PRESET_MOVE_EPS`
-  (0.02); then `pot_live[i]` latches true and that pot follows the live knob
-  forever (until the next recall). LIVE / SAVE_ARMED are fully live.
+- Each 100 Hz pass, while a preset is in play (PRESET, **or SAVE_ARMED when armed
+  from a preset**): a pot stays on its **saved** value (`preset_value(i)`) until
+  the physical knob travels past `PRESET_MOVE_EPS` (0.02); then `pot_live[i]`
+  latches true and that pot follows the live knob forever (until the next recall
+  or commit). LIVE and a SAVE_ARMED armed from LIVE are fully live.
 - The value actually driven is `ctl[i]`; `cv_target[]` / `bias_target` and the
   LED1 gain meter all read `ctl[]`, not raw `eff[]`.
 

@@ -74,6 +74,13 @@ void preset_on_pot_move(Preset* p, int idx, float value);
 void preset_recall_toggle(Preset* p);   /* short tap                     */
 void preset_hold_fired(Preset* p);      /* ~1 s hold crossed: arm/commit */
 
+/* Commit a host-supplied snapshot and drop into PRESET mode. The host passes the
+ * GATED values (saved value for a pot untouched since recall, live knob for a pot
+ * that moved), so a save from a recalled preset keeps the un-tweaked params and
+ * overwrites only what changed — copy-the-preset-then-edit. Preferred over the
+ * SAVE_ARMED branch of preset_hold_fired, which snapshots the raw live panel. */
+void preset_commit(Preset* p, const float values[PRESET_NUM_POTS]);
+
 /* Control-rate housekeeping; dt_ms since the last call. */
 void preset_tick(Preset* p, float dt_ms);
 
@@ -94,6 +101,7 @@ PresetColor preset_led_color(const Preset* p);
 static inline PresetMode preset_mode(const Preset* p)        { return p->mode; }
 static inline bool preset_in_preset_mode(const Preset* p)    { return p->mode == PRESET_PRESET; }
 static inline bool preset_save_armed(const Preset* p)        { return p->mode == PRESET_SAVE_ARMED; }
+static inline PresetMode preset_armed_from(const Preset* p)  { return p->prev_mode; }   /* pre-arm mode */
 static inline bool preset_has_preset(const Preset* p)        { return p->has_preset; }
 
 #ifdef __cplusplus

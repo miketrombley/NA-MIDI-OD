@@ -115,6 +115,20 @@ void preset_hold_fired(Preset* p)
     }
 }
 
+void preset_commit(Preset* p, const float values[PRESET_NUM_POTS])
+{
+    /* Store the host's gated snapshot (preset value for untouched pots, live knob
+     * for moved ones) and settle into PRESET. Unlike preset_hold_fired's legacy
+     * SAVE_ARMED branch, this does NOT read p->live[] — the host decided which
+     * values to keep, so a save from a recalled preset preserves un-tweaked params. */
+    for (int i = 0; i < PRESET_NUM_POTS; ++i) {
+        p->preset[i]  = values[i];
+        p->aligned[i] = true;
+    }
+    p->has_preset = true;
+    p->mode       = PRESET_PRESET;
+}
+
 void preset_tick(Preset* p, float dt_ms)
 {
     p->breathe_ms += dt_ms;                 /* free-running; read only while armed */

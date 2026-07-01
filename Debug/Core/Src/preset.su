@@ -4,8 +4,9 @@
 ../Core/Src/preset.c:60:6:preset_on_pot_move	40	static
 ../Core/Src/preset.c:77:6:preset_recall_toggle	16	static
 ../Core/Src/preset.c:98:6:preset_hold_fired	24	static
-../Core/Src/preset.c:118:6:preset_tick	16	static
-../Core/Src/preset.c:124:6:preset_load_snapshot	24	static
-../Core/Src/preset.c:134:7:preset_value	16	static
-../Core/Src/preset.c:139:6:preset_led_on	16	static
-../Core/Src/preset.c:144:13:preset_led_color	64	static
+../Core/Src/preset.c:118:6:preset_commit	24	static
+../Core/Src/preset.c:132:6:preset_tick	16	static
+../Core/Src/preset.c:138:6:preset_load_snapshot	24	static
+../Core/Src/preset.c:148:7:preset_value	16	static
+../Core/Src/preset.c:153:6:preset_led_on	16	static
+../Core/Src/preset.c:158:13:preset_led_color	64	static

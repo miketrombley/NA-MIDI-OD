@@ -518,10 +518,24 @@ int main(void)
          * blocks here for up to a few hundred ms — fine for this deliberate
          * gesture (MIDI RX is buffered in its ISR, the TIM7 smoother keeps the
          * outputs gliding; only the LEDs/loop pause briefly). */
-        bool committing = (preset_mode(&preset_state) == PRESET_SAVE_ARMED);
-        preset_hold_fired(&preset_state);
+        if (preset_mode(&preset_state) == PRESET_SAVE_ARMED) {
+          /* COMMIT. Snapshot the GATED values — the saved value for any pot NOT
+           * moved since recall, the live knob for pots that were. A save from a
+           * recalled preset therefore keeps the untouched params and overwrites
+           * only what you tweaked (copy-the-preset-then-edit), instead of grabbing
+           * the raw physical panel. Armed from LIVE there's no gate, so snap == eff
+           * and a fresh sound saves whole. Then persist to flash (blocks briefly). */
+          bool from_preset = (preset_armed_from(&preset_state) == PRESET_PRESET);
+          float snap[6];
+          for (int i = 0; i < 6; i++)
+            snap[i] = (from_preset && !pot_live[i])
+                        ? preset_value(&preset_state, i) : eff[i];
+          preset_commit(&preset_state, snap);
+          preset_store_save(&flash, &preset_state);
+        } else {
+          preset_hold_fired(&preset_state);   /* first hold -> arm (breathe) */
+        }
         sw2_hold_fired = true;
-        if (committing) preset_store_save(&flash, &preset_state);
       }
       if (fsw_falling(&sw2) && !sw2_hold_fired)
         preset_recall_toggle(&preset_state);
@@ -529,22 +543,33 @@ int main(void)
       /* Recall hold-vs-takeover gate. On entry into PRESET mode (recall or commit)
        * re-arm every pot: it holds the saved value until the physical knob travels
        * past PRESET_MOVE_EPS, after which the live knob owns it again (and crossing
-       * back onto the saved value flashes LED2 white). LIVE/SAVE_ARMED are fully
-       * live. ctl[] is the value actually driven; eff[] is the raw knob/MIDI. */
+       * back onto the saved value flashes LED2 white). ctl[] is the value actually
+       * driven; eff[] is the raw knob/MIDI. (When the gate applies — including a
+       * save armed from a preset — see the preset_ctx block just below.) */
       PresetMode pm = preset_mode(&preset_state);
       if (pm == PRESET_PRESET && preset_prev_mode != PRESET_PRESET) {
         for (int i = 0; i < 6; i++) { pot_live[i] = false; pot_baseline[i] = eff[i]; }
       }
       preset_prev_mode = pm;
 
+      /* The recall gate governs whenever a preset is in play: recalled (PRESET) or
+       * a save armed FROM a recalled preset. Keeping it live through SAVE_ARMED is
+       * what lets you tweak one knob and commit "preset + that edit" — arming no
+       * longer snaps every untouched pot to its raw physical position, so what you
+       * hear while the LED breathes is exactly what the commit will store. A save
+       * armed from LIVE has no gate (dialing a fresh sound), so ctl == eff there. */
+      bool preset_ctx = (pm == PRESET_PRESET)
+          || (pm == PRESET_SAVE_ARMED
+              && preset_armed_from(&preset_state) == PRESET_PRESET);
+
       float ctl[6];
       for (int i = 0; i < 6; i++) {
-        if (pm == PRESET_PRESET) {
+        if (preset_ctx) {
           if (!pot_live[i] && fabsf(eff[i] - pot_baseline[i]) > PRESET_MOVE_EPS)
             pot_live[i] = true;                 /* knob reclaimed this pot */
           ctl[i] = pot_live[i] ? eff[i] : preset_value(&preset_state, i);
         } else {
-          ctl[i] = eff[i];                      /* LIVE / SAVE_ARMED: straight through */
+          ctl[i] = eff[i];                      /* LIVE / fresh SAVE_ARMED: straight through */
         }
       }
 
